@@ -7,7 +7,7 @@ namespace UserService.Controllers
 {
 	public class RegisterRequest
 	{
-		public string FullName { get; set; } = string.Empty;
+		public string Pseudo { get; set; } = string.Empty;
 		public string Email { get; set; } = string.Empty;
 		public string Password { get; set; } = string.Empty;
 		public string? FirstName { get; set; }
@@ -47,8 +47,8 @@ namespace UserService.Controllers
 		[HttpPost("register")]
 		public async Task<IActionResult> Register([FromBody] RegisterRequest request)
 		{
-			if (string.IsNullOrWhiteSpace(request.FullName))
-				return BadRequest(new { Message = "Full name is required." });
+			if (string.IsNullOrWhiteSpace(request.Pseudo))
+				return BadRequest(new { Message = "Pseudo is required." });
 
 			if (string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains("@"))
 				return BadRequest(new { Message = "Valid email is required." });
@@ -66,7 +66,7 @@ namespace UserService.Controllers
 
 			var user = new User
 			{
-				FullName = request.FullName,
+				Pseudo = request.Pseudo,
 				Email = request.Email,
 				FirstName = request.FirstName,
 				LastName = request.LastName,
@@ -85,7 +85,7 @@ namespace UserService.Controllers
 			{
 				Token = token.Token,
 				Email = user.Email,
-				Name = user.FullName,
+				Name = user.Pseudo,
 				Role = user.Role!,
 				Expiration = token.Expiration,
 				User = user
@@ -116,7 +116,7 @@ namespace UserService.Controllers
 			{
 				Token = token.Token,
 				Email = user.Email,
-				Name = user.FullName,
+				Name = user.Pseudo,
 				Role = user.Role!,
 				Expiration = token.Expiration,
 				User = user
@@ -130,7 +130,7 @@ namespace UserService.Controllers
 			{
 				UserId = user.Id,
 				Email = user.Email,
-				Name = user.FullName,
+				Name = user.Pseudo,
 				Role = user.Role,
 				FirstName = user.FirstName,
 				LastName = user.LastName

@@ -14,7 +14,7 @@ namespace UserService.Models
 		public int Id { get; set; }
 
 		[Required]
-		public string FullName { get; set; } = string.Empty;
+		public string Pseudo { get; set; } = string.Empty;
 
 		[Required]
 		[EmailAddress]
