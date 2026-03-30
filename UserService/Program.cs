@@ -9,7 +9,11 @@ builder.Services.AddDbContext<UserDbContext>(options =>
     )
 );
 
-builder.Services.AddHttpClient();
+// Register HttpClient for AuthService
+builder.Services.AddHttpClient("AuthService", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:6000");
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

@@ -1,51 +1,134 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 using UserService.Data;
 using UserService.Models;
 
 namespace UserService.Controllers
 {
-	public class CreateUserRequest
-	{
-		public string Name { get; set; } = string.Empty;
-		public string Email { get; set; } = string.Empty;
-		public string? FirstName { get; set; }
-		public string? LastName { get; set; }
-		public string? PhoneNumber { get; set; }
-	}
-
-	public class UpdateUserRequest
-	{
-		public string? Name { get; set; }
-		public string? Email { get; set; }
-		public string? FirstName { get; set; }
-		public string? LastName { get; set; }
-		public string? PhoneNumber { get; set; }
-	}
-
 	[ApiController]
 	[Route("api/users")]
-	public class UsersController : ControllerBase
+	public class UserController : ControllerBase
 	{
 		private readonly UserDbContext _context;
+		private readonly HttpClient _authServiceClient;
 
-		public UsersController(UserDbContext context)
+		public UserController(UserDbContext context, IHttpClientFactory httpClientFactory)
 		{
 			_context = context;
+			_authServiceClient = httpClientFactory.CreateClient("AuthService");
 		}
 
-		// GET https://localhost:PORT/api/users
+		// Models
+		public class LoginRequest
+		{
+			public string Email { get; set; } = string.Empty;
+			public string Password { get; set; } = string.Empty;
+		}
+
+		public class LoginResponse
+		{
+			public string Token { get; set; } = string.Empty;
+			public User User { get; set; } = null!;
+		}
+
+		public class RegisterRequest
+		{
+			public string FirstName { get; set; } = string.Empty;
+			public string LastName { get; set; } = string.Empty;
+			public string FullName { get; set; } = string.Empty;
+			public string Email { get; set; } = string.Empty;
+			public string Password { get; set; } = string.Empty;
+			public string? PhoneNumber { get; set; }
+			public string? Role { get; set; } = "User";
+		}
+
+		// POST /api/users/register - Register new user
+		[HttpPost("register")]
+		public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+		{
+			if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
+			{
+				return BadRequest(new { Message = "Email and password are required." });
+			}
+
+			// Vérifier si l'email existe déjà
+			var existingUser = await _context.Users
+				.FirstOrDefaultAsync(u => u.Email == request.Email);
+
+			if (existingUser != null)
+			{
+				return Conflict(new { Message = "User with this email already exists." });
+			}
+
+			var user = new User
+			{
+				FirstName = request.FirstName,
+				LastName = request.LastName,
+				FullName = request.FullName,
+				Email = request.Email,
+				PasswordHash = HashPassword(request.Password), // Simple hash
+				PhoneNumber = request.PhoneNumber,
+				Role = request.Role ?? "User",
+				CreatedAt = DateTime.UtcNow
+			};
+
+			_context.Users.Add(user);
+			await _context.SaveChangesAsync();
+
+			return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
+		}
+
+		// POST /api/users/login - Login user and get JWT token
+		[HttpPost("login")]
+		public async Task<IActionResult> Login([FromBody] LoginRequest request)
+		{
+			if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
+			{
+				return BadRequest(new { Message = "Email and password are required." });
+			}
+
+			var user = await _context.Users
+				.FirstOrDefaultAsync(u => u.Email == request.Email);
+
+			if (user == null || !VerifyPassword(request.Password, user.PasswordHash))
+			{
+				return Unauthorized(new { Message = "Invalid email or password." });
+			}
+
+			// Call AuthService to generate token
+			var tokenRequest = new
+			{
+				UserId = user.Id,
+				Email = user.Email,
+				Name = user.FullName,
+				Role = user.Role
+			};
+
+			var response = await _authServiceClient.PostAsJsonAsync("api/auth/token", tokenRequest);
+
+			if (!response.IsSuccessStatusCode)
+			{
+				return StatusCode((int)response.StatusCode, new { Message = "Failed to generate token." });
+			}
+
+			var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
+
+			return Ok(new LoginResponse
+			{
+				Token = tokenResponse?.Token ?? string.Empty,
+				User = user
+			});
+		}
+
+		// GET /api/users - Get all users
 		[HttpGet]
 		public async Task<IActionResult> GetAll()
 		{
-			var users = await _context.Users
-				.OrderByDescending(u => u.CreatedAt)
-				.ToListAsync();
-
+			var users = await _context.Users.ToListAsync();
 			return Ok(users);
 		}
 
-		// GET https://localhost:PORT/api/users/{id}
+		// GET /api/users/{id} - Get user by ID
 		[HttpGet("{id}")]
 		public async Task<IActionResult> GetById(int id)
 		{
@@ -53,57 +136,28 @@ namespace UserService.Controllers
 
 			if (user == null)
 			{
-				return NotFound(new { Message = $"User with ID {id} not found." });
+				return NotFound(new { Message = "User not found." });
 			}
 
 			return Ok(user);
 		}
 
-		// POST https://localhost:PORT/api/users
-		[HttpPost]
-		public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
+		// GET /api/users/email/{email} - Get user by email
+		[HttpGet("email/{email}")]
+		public async Task<IActionResult> GetByEmail(string email)
 		{
-			// Validation
-			if (string.IsNullOrWhiteSpace(request.Name))
+			var user = await _context.Users
+				.FirstOrDefaultAsync(u => u.Email == email);
+
+			if (user == null)
 			{
-				return BadRequest(new { Message = "Name is required." });
+				return NotFound(new { Message = "User not found." });
 			}
 
-			if (string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains("@"))
-			{
-				return BadRequest(new { Message = "Valid email is required." });
-			}
-
-            // Vérifier si l'email existe déjà
-			var existingUser = await _context.Users
-				.FirstOrDefaultAsync(u => u.Email == request.Email);
-
-			if (existingUser != null)
-			{
-				return Conflict(new { Message = $"User with email '{request.Email}' already exists." });
-			}
-
-			var user = new User
-			{
-				Name = request.Name,
-				Email = request.Email,
-				FirstName = request.FirstName,
-				LastName = request.LastName,
-				PhoneNumber = request.PhoneNumber,
-				CreatedAt = DateTime.UtcNow
-			};
-
-			_context.Users.Add(user);
-			await _context.SaveChangesAsync();
-
-			return CreatedAtAction(
-				nameof(GetById),
-				new { id = user.Id },
-				user
-			);
+			return Ok(user);
 		}
 
-		// PUT https://localhost:PORT/api/users/{id}
+		// PUT /api/users/{id} - Update user
 		[HttpPut("{id}")]
 		public async Task<IActionResult> Update(int id, [FromBody] UpdateUserRequest request)
 		{
@@ -111,10 +165,10 @@ namespace UserService.Controllers
 
 			if (user == null)
 			{
-				return NotFound(new { Message = $"User with ID {id} not found." });
+				return NotFound(new { Message = "User not found." });
 			}
 
-            // Vérifier si l'email existe déjà pour un autre utilisateur
+			// Vérifier si l'email existe déjà pour un autre utilisateur
 			if (!string.IsNullOrEmpty(request.Email) && request.Email != user.Email)
 			{
 				var existingUser = await _context.Users
@@ -122,28 +176,25 @@ namespace UserService.Controllers
 
 				if (existingUser != null)
 				{
-					return Conflict(new { Message = $"Email '{request.Email}' is already in use." });
+					return Conflict(new { Message = "Email already in use." });
 				}
+
+				user.Email = request.Email;
 			}
 
-            // Mettre � jour les champs si ils sont fournis dans la requ�te
-            if (!string.IsNullOrEmpty(request.Name))
-				user.Name = request.Name;
-			if (!string.IsNullOrEmpty(request.Email))
-				user.Email = request.Email;
-			if (request.FirstName != null)
-				user.FirstName = request.FirstName;
-			if (request.LastName != null)
-				user.LastName = request.LastName;
-			if (request.PhoneNumber != null)
-				user.PhoneNumber = request.PhoneNumber;
+			user.FirstName = request.FirstName ?? user.FirstName;
+			user.LastName = request.LastName ?? user.LastName;
+			user.FullName = request.FullName ?? user.FullName;
+			user.PhoneNumber = request.PhoneNumber;
+			user.Role = request.Role ?? user.Role;
 
+			_context.Users.Update(user);
 			await _context.SaveChangesAsync();
 
 			return Ok(user);
 		}
 
-		// DELETE https://localhost:PORT/api/users/{id}
+		// DELETE /api/users/{id} - Delete user
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> Delete(int id)
 		{
@@ -151,13 +202,41 @@ namespace UserService.Controllers
 
 			if (user == null)
 			{
-				return NotFound(new { Message = $"User with ID {id} not found." });
+				return NotFound(new { Message = "User not found." });
 			}
 
 			_context.Users.Remove(user);
 			await _context.SaveChangesAsync();
 
-			return Ok(new { Message = $"User with ID {id} deleted successfully." });
+			return NoContent();
 		}
+
+		// Helper: Simple password hash (in production, use proper hashing like BCrypt)
+		private string HashPassword(string password)
+		{
+			return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password + "_salt"));
+		}
+
+		// Helper: Verify password
+		private bool VerifyPassword(string password, string hash)
+		{
+			return HashPassword(password) == hash;
+		}
+	}
+
+	public class UpdateUserRequest
+	{
+		public string? FirstName { get; set; }
+		public string? LastName { get; set; }
+		public string? FullName { get; set; }
+		public string? Email { get; set; }
+		public string? PhoneNumber { get; set; }
+		public string? Role { get; set; }
+	}
+
+	// Anonymous DTO for token response
+	public class TokenResponse
+	{
+		public string Token { get; set; } = string.Empty;
 	}
 }
