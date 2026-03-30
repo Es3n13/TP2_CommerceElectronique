@@ -74,8 +74,8 @@ namespace userservice.Controllers
 				return BadRequest(new { Message = "Valid email is required." });
 			}
 
-			// Check if email already exists
-			var existingUser = await _context.Users
+            // Vérifier si l'eamil existe déjà
+            var existingUser = await _context.Users
 				.FirstOrDefaultAsync(u => u.Email == request.Email);
 
 			if (existingUser != null)
@@ -114,8 +114,8 @@ namespace userservice.Controllers
 				return NotFound(new { Message = $"User with ID {id} not found." });
 			}
 
-			// Check email uniqueness if email is being changed
-			if (!string.IsNullOrEmpty(request.Email) && request.Email != user.Email)
+            // Vérifier si l'eamil existe déjà pour un autre utilisateur
+            if (!string.IsNullOrEmpty(request.Email) && request.Email != user.Email)
 			{
 				var existingUser = await _context.Users
 					.FirstOrDefaultAsync(u => u.Email == request.Email && u.Id != id);
@@ -126,8 +126,8 @@ namespace userservice.Controllers
 				}
 			}
 
-			// Update fields if provided
-			if (!string.IsNullOrEmpty(request.Name))
+            // Mettre à jour les champs si ils sont fournis dans la requête
+            if (!string.IsNullOrEmpty(request.Name))
 				user.Name = request.Name;
 			if (!string.IsNullOrEmpty(request.Email))
 				user.Email = request.Email;
