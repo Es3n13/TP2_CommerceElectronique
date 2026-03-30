@@ -3,9 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ResourcesService.Models
 {
-	/// <summary>
-	/// Resource entity (rooms, halls, spaces, etc.)
-	/// </summary>
 	[Table("Resources")]
 	public class Resource
 	{

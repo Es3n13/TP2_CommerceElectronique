@@ -132,9 +132,9 @@ namespace ReservationsService.Controllers
 				return NotFound(new { Message = $"Reservation with ID {id} not found." });
 			}
 
-			if (request.ReservationDate != default)
-				reservation.ReservationDate = request.ReservationDate;
-			if (request.StartTime.HasValue)
+            if (request.ReservationDate.HasValue)
+                reservation.ReservationDate = request.ReservationDate.Value;
+            if (request.StartTime.HasValue)
 				reservation.StartTime = request.StartTime;
 			if (request.EndTime.HasValue)
 				reservation.EndTime = request.EndTime;
