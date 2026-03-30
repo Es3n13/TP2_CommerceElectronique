@@ -1,44 +1,161 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ResourcesService.Data;
+using ResourcesService.Models;
 
 namespace ResourcesService.Controllers
 {
+	public class CreateResourceRequest
+	{
+		public string Name { get; set; } = string.Empty;
+		public string Description { get; set; } = string.Empty;
+		public string? Type { get; set; }
+		public decimal? Price { get; set; }
+		public int? Capacity { get; set; }
+		public string? Location { get; set; }
+		public bool IsAvailable { get; set; } = true;
+		public string? Features { get; set; }
+	}
 
-    public class CreateResourceRequest
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-    }
+	public class UpdateResourceRequest
+	{
+		public string? Name { get; set; }
+		public string? Description { get; set; }
+		public string? Type { get; set; }
+		public decimal? Price { get; set; }
+		public int? Capacity { get; set; }
+		public string? Location { get; set; }
+		public bool? IsAvailable { get; set; }
+		public string? Features { get; set; }
+	}
 
-    [ApiController]
-    [Route("api/resources")]
-    public class ResourcesController : ControllerBase
-    {
-        // GET https://localhost:PORT/api/resources
-        [HttpGet]
-        public IActionResult GetAll()
-        {
+	[ApiController]
+	[Route("api/resources")]
+	public class ResourcesController : ControllerBase
+	{
+		private readonly ResourceDbContext _context;
 
-            var resources = new[]
-            {
-                new { Id = 1, Name = "Salle A",     Description = "Salle réunion 10 personnes" },
-                new { Id = 2, Name = "Chambre 101", Description = "Chambre simple vue mer" }
-            };
+		public ResourcesController(ResourceDbContext context)
+		{
+			_context = context;
+		}
 
-            return Ok(resources);
-        }
+		[HttpGet]
+		public async Task<IActionResult> GetAll()
+		{
+			var resources = await _context.Resources
+				.OrderByDescending(r => r.CreatedAt)
+				.ToListAsync();
 
-        // POST https://localhost:PORT/api/resources
-        [HttpPost]
-        public IActionResult Create([FromBody] CreateResourceRequest request)
-        {
-            var createdResource = new
-            {
-                Id = 3, // Id simulé
-                Name = request.Name,
-                Description = request.Description
-            };
+			return Ok(resources);
+		}
 
-            return Created(string.Empty, createdResource);
-        }
-    }
+		[HttpGet("{id}")]
+		public async Task<IActionResult> GetById(int id)
+		{
+			var resource = await _context.Resources.FindAsync(id);
+
+			if (resource == null)
+			{
+				return NotFound(new { Message = $"Resource with ID {id} not found." });
+			}
+
+			return Ok(resource);
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> Create([FromBody] CreateResourceRequest request)
+		{
+			if (string.IsNullOrWhiteSpace(request.Name))
+			{
+				return BadRequest(new { Message = "Name is required." });
+			}
+
+			if (string.IsNullOrWhiteSpace(request.Description))
+			{
+				return BadRequest(new { Message = "Description is required." });
+			}
+
+			var existingResource = await _context.Resources
+				.FirstOrDefaultAsync(r =>
+					r.Name == request.Name &&
+					r.Location == request.Location
+				);
+
+			if (existingResource != null)
+			{
+				return Conflict(new { Message = $"Resource '{request.Name}' at location '{request.Location}' already exists." });
+			}
+
+			var resource = new Resource
+			{
+				Name = request.Name,
+				Description = request.Description,
+				Type = request.Type,
+				Price = request.Price,
+				Capacity = request.Capacity,
+				Location = request.Location,
+				IsAvailable = request.IsAvailable,
+				Features = request.Features,
+				CreatedAt = DateTime.UtcNow
+			};
+
+			_context.Resources.Add(resource);
+			await _context.SaveChangesAsync();
+
+			return CreatedAtAction(
+				nameof(GetById),
+				new { id = resource.Id },
+				resource
+			);
+		}
+
+		[HttpPut("{id}")]
+		public async Task<IActionResult> Update(int id, [FromBody] UpdateResourceRequest request)
+		{
+			var resource = await _context.Resources.FindAsync(id);
+
+			if (resource == null)
+			{
+				return NotFound(new { Message = $"Resource with ID {id} not found." });
+			}
+
+			if (!string.IsNullOrEmpty(request.Name))
+				resource.Name = request.Name;
+			if (!string.IsNullOrEmpty(request.Description))
+				resource.Description = request.Description;
+			if (request.Type != null)
+				resource.Type = request.Type;
+			if (request.Price.HasValue)
+				resource.Price = request.Price;
+			if (request.Capacity.HasValue)
+				resource.Capacity = request.Capacity;
+			if (request.Location != null)
+				resource.Location = request.Location;
+			if (request.IsAvailable.HasValue)
+				resource.IsAvailable = request.IsAvailable.Value;
+			if (request.Features != null)
+				resource.Features = request.Features;
+
+			await _context.SaveChangesAsync();
+
+			return Ok(resource);
+		}
+
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> Delete(int id)
+		{
+			var resource = await _context.Resources.FindAsync(id);
+
+			if (resource == null)
+			{
+				return NotFound(new { Message = $"Resource with ID {id} not found." });
+			}
+
+			_context.Resources.Remove(resource);
+			await _context.SaveChangesAsync();
+
+			return Ok(new { Message = $"Resource with ID {id} deleted successfully." });
+		}
+	}
 }
