@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using userservice.Data;
-using userservice.Models;
+using UserService.Data;
+using UserService.Models;
 
-namespace userservice.Controllers
+namespace UserService.Controllers
 {
 	public class CreateUserRequest
 	{
@@ -74,8 +74,8 @@ namespace userservice.Controllers
 				return BadRequest(new { Message = "Valid email is required." });
 			}
 
-            // Vérifier si l'eamil existe déjà
-            var existingUser = await _context.Users
+            // VÃ©rifier si l'email existe dÃ©jÃ 
+			var existingUser = await _context.Users
 				.FirstOrDefaultAsync(u => u.Email == request.Email);
 
 			if (existingUser != null)
@@ -114,8 +114,8 @@ namespace userservice.Controllers
 				return NotFound(new { Message = $"User with ID {id} not found." });
 			}
 
-            // Vérifier si l'eamil existe déjà pour un autre utilisateur
-            if (!string.IsNullOrEmpty(request.Email) && request.Email != user.Email)
+            // VÃ©rifier si l'email existe dÃ©jÃ  pour un autre utilisateur
+			if (!string.IsNullOrEmpty(request.Email) && request.Email != user.Email)
 			{
 				var existingUser = await _context.Users
 					.FirstOrDefaultAsync(u => u.Email == request.Email && u.Id != id);
@@ -126,7 +126,7 @@ namespace userservice.Controllers
 				}
 			}
 
-            // Mettre à jour les champs si ils sont fournis dans la requête
+            // Mettre ï¿½ jour les champs si ils sont fournis dans la requï¿½te
             if (!string.IsNullOrEmpty(request.Name))
 				user.Name = request.Name;
 			if (!string.IsNullOrEmpty(request.Email))

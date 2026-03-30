@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using userservice.Models;
+using UserService.Models;
 
-namespace userservice.Data
+namespace UserService.Data
 {
 	/// <summary>
-	/// Database context for userservice
+	/// Database context for UserService
 	/// </summary>
 	public class UserDbContext : DbContext
 	{

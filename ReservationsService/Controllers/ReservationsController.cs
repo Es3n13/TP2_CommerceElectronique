@@ -133,7 +133,7 @@ namespace ReservationsService.Controllers
 			}
 
             if (request.ReservationDate.HasValue)
-                reservation.ReservationDate = request.ReservationDate.Value;
+				reservation.ReservationDate = request.ReservationDate.Value;
             if (request.StartTime.HasValue)
 				reservation.StartTime = request.StartTime;
 			if (request.EndTime.HasValue)

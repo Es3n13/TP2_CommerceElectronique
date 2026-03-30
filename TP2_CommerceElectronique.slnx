@@ -1,6 +1,7 @@
 <Solution>
   <Project Path="ApiGateway/ApiGateway.csproj" />
+  <Project Path="AuthService/AuthService.csproj" />
   <Project Path="ReservationsService/ReservationsService.csproj" />
   <Project Path="ResourcesService/ResourcesService.csproj" />
-  <Project Path="userservice/userservice.csproj" />
+  <Project Path="UserService/UserService.csproj" />
 </Solution>

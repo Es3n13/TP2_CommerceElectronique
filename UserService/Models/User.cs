@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace userservice.Models
+namespace UserService.Models
 {
 	/// <summary>
 	/// User entity for the userservice database
@@ -20,7 +20,7 @@ namespace userservice.Models
 		[EmailAddress]
 		public string Email { get; set; } = string.Empty;
 
-		// Password hash (we'll add this when implementing JWT auth)
+		// Password hash for authentication
 		public string? PasswordHash { get; set; }
 
 		public string? FirstName { get; set; }

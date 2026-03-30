@@ -10,7 +10,31 @@
         }
       ],
       "UpstreamPathTemplate": "/api/users",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/auth/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 6000
+        }
+      ],
+      "UpstreamPathTemplate": "/api/auth/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/users/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5140
+        }
+      ],
+      "UpstreamPathTemplate": "/api/users/{id}",
+      "UpstreamHttpMethod": [ "Get", "Put", "Delete" ]
     }
   ],
   "GlobalConfiguration": {
