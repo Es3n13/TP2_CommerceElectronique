@@ -2,7 +2,7 @@
 
 namespace ResourcesService.Controllers
 {
-    // Hadi hiya l-class li katsift l-client f POST
+
     public class CreateResourceRequest
     {
         public string Name { get; set; }
@@ -17,7 +17,7 @@ namespace ResourcesService.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            // Data fake, ghir bach njarrbou
+
             var resources = new[]
             {
                 new { Id = 1, Name = "Salle A",     Description = "Salle réunion 10 personnes" },
@@ -31,7 +31,6 @@ namespace ResourcesService.Controllers
         [HttpPost]
         public IActionResult Create([FromBody] CreateResourceRequest request)
         {
-            // Hna kansimuliw création f base
             var createdResource = new
             {
                 Id = 3, // Id simulé

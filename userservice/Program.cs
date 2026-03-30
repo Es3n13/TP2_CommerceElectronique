@@ -3,18 +3,16 @@ using userservice.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ============================================================
 // CONFIGURATION
-// ============================================================
 
-// Add EF Core with SQL Server
+// Ajouter EF Core et SQL Server
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("UserDbConnection")
     )
 );
 
-// Add API Controllers and Swagger
+// Ajouter API Controllers et Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -26,11 +24,9 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// ============================================================
 // MIDDLEWARE
-// ============================================================
 
-// Configure the HTTP request pipeline
+// Configure le HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
 	app.UseSwagger();
@@ -40,14 +36,14 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthorization();
 
-// Optional: Auto-migrate in development (NOT recommended for production)
+//Migration automatique
 if (app.Environment.IsDevelopment())
 {
 	using (var scope = app.Services.CreateScope())
 	{
 		var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
-		// Create database if it doesn't exist
-		context.Database.EnsureCreated();
+        // Créer la base de données si elle n'existe pas
+        context.Database.EnsureCreated();
 	}
 }
 
