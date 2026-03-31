@@ -16,16 +16,16 @@ namespace AuthService.Controllers
 			_tokenService = tokenService;
 		}
 
-		// POST /api/auth/token - Generate JWT token for a user
-		[HttpPost("token")]
+        // POST /api/auth/token - Générer un JWT token
+        [HttpPost("token")]
 		public IActionResult GenerateToken([FromBody] TokenRequest request)
 		{
 			var token = _tokenService.GenerateToken(request);
 			return Ok(token);
 		}
 
-		// POST /api/auth/validate - Validate JWT token
-		[HttpPost("validate")]
+        // POST /api/auth/validate - Valider un JWT token
+        [HttpPost("validate")]
 		public IActionResult ValidateToken([FromBody] ValidateTokenRequest request)
 		{
 			var claims = _tokenService.ValidateToken(request.Token);
