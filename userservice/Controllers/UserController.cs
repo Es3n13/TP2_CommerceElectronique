@@ -18,7 +18,7 @@ namespace UserService.Controllers
 			_authServiceClient = httpClientFactory.CreateClient("AuthService");
 		}
 
-		// Models
+		// Modèles
 		public class LoginRequest
 		{
 			public string Email { get; set; } = string.Empty;
@@ -42,8 +42,8 @@ namespace UserService.Controllers
 			public string? Role { get; set; } = "User";
 		}
 
-		// POST /api/users/register - Register new user
-		[HttpPost("register")]
+        // POST /api/users/register - Enregistrer un nouvel utilisateur
+        [HttpPost("register")]
 		public async Task<IActionResult> Register([FromBody] RegisterRequest request)
 		{
 			if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
@@ -78,8 +78,8 @@ namespace UserService.Controllers
 			return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
 		}
 
-		// POST /api/users/login - Login user and get JWT token
-		[HttpPost("login")]
+        // POST /api/users/login - Login utilisateur et obtenir un token JWT
+        [HttpPost("login")]
 		public async Task<IActionResult> Login([FromBody] LoginRequest request)
 		{
 			if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
@@ -95,8 +95,8 @@ namespace UserService.Controllers
 				return Unauthorized(new { Message = "Invalid email or password." });
 			}
 
-			// Call AuthService to generate token
-			var tokenRequest = new
+            // Appel AuthService pour générer un token JWT
+            var tokenRequest = new
 			{
 				UserId = user.Id,
 				Email = user.Email,
@@ -120,15 +120,15 @@ namespace UserService.Controllers
 			});
 		}
 
-		// GET /api/users - Get all users
-		[HttpGet]
+        // GET /api/users - Get tout les utilisateurs
+        [HttpGet]
 		public async Task<IActionResult> GetAll()
 		{
 			var users = await _context.Users.ToListAsync();
 			return Ok(users);
 		}
 
-		// GET /api/users/{id} - Get user by ID
+		// GET /api/users/{id} - Get utilisateur par ID
 		[HttpGet("{id}")]
 		public async Task<IActionResult> GetById(int id)
 		{
@@ -142,7 +142,7 @@ namespace UserService.Controllers
 			return Ok(user);
 		}
 
-		// GET /api/users/email/{email} - Get user by email
+		// GET /api/users/email/{email} - Get utilisateur par email
 		[HttpGet("email/{email}")]
 		public async Task<IActionResult> GetByEmail(string email)
 		{
@@ -157,7 +157,7 @@ namespace UserService.Controllers
 			return Ok(user);
 		}
 
-		// PUT /api/users/{id} - Update user
+		// PUT /api/users/{id} - Update utilisateur
 		[HttpPut("{id}")]
 		public async Task<IActionResult> Update(int id, [FromBody] UpdateUserRequest request)
 		{
@@ -194,8 +194,8 @@ namespace UserService.Controllers
 			return Ok(user);
 		}
 
-		// DELETE /api/users/{id} - Delete user
-		[HttpDelete("{id}")]
+        // DELETE /api/users/{id} - Delete utilisateur
+        [HttpDelete("{id}")]
 		public async Task<IActionResult> Delete(int id)
 		{
 			var user = await _context.Users.FindAsync(id);
@@ -211,14 +211,14 @@ namespace UserService.Controllers
 			return NoContent();
 		}
 
-		// Helper: Simple password hash (in production, use proper hashing like BCrypt)
-		private string HashPassword(string password)
+        // Hash de mot de passe simple
+        private string HashPassword(string password)
 		{
 			return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password + "_salt"));
 		}
 
-		// Helper: Verify password
-		private bool VerifyPassword(string password, string hash)
+        // Vérification de mot de passe
+        private bool VerifyPassword(string password, string hash)
 		{
 			return HashPassword(password) == hash;
 		}
@@ -234,8 +234,8 @@ namespace UserService.Controllers
 		public string? Role { get; set; }
 	}
 
-	// Anonymous DTO for token response
-	public class TokenResponse
+    // DTO pour la réponse du token JWT
+    public class TokenResponse
 	{
 		public string Token { get; set; } = string.Empty;
 	}
