@@ -5,7 +5,7 @@ using UserService.Models;
 
 namespace UserService.Controllers
 {
-	public class RegisterRequest
+	public class AuthRegisterRequest
 	{
 		public string Pseudo { get; set; } = string.Empty;
 		public string Email { get; set; } = string.Empty;
@@ -15,7 +15,7 @@ namespace UserService.Controllers
 		public string? PhoneNumber { get; set; }
 	}
 
-	public class LoginRequest
+	public class AuthLoginRequest
 	{
 		public string Email { get; set; } = string.Empty;
 		public string Password { get; set; } = string.Empty;
@@ -45,7 +45,7 @@ namespace UserService.Controllers
 		}
 
 		[HttpPost("register")]
-		public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+		public async Task<IActionResult> Register([FromBody] AuthRegisterRequest request)
 		{
 			if (string.IsNullOrWhiteSpace(request.Pseudo))
 				return BadRequest(new { Message = "Pseudo is required." });
@@ -93,7 +93,7 @@ namespace UserService.Controllers
 		}
 
 		[HttpPost("login")]
-		public async Task<IActionResult> Login([FromBody] LoginRequest request)
+		public async Task<IActionResult> Login([FromBody] AuthLoginRequest request)
 		{
 			if (string.IsNullOrWhiteSpace(request.Email))
 				return BadRequest(new { Message = "Email is required." });
