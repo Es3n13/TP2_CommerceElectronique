@@ -39,7 +39,7 @@ namespace AuthService.Controllers
 				IsValid = true,
 				UserId = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value,
 				Email = claims.FindFirst(ClaimTypes.Email)?.Value,
-				Name = claims.FindFirst(ClaimTypes.Name)?.Value,
+				Pseudo = claims.FindFirst(ClaimTypes.Name)?.Value,
 				Role = claims.FindFirst(ClaimTypes.Role)?.Value,
 				Expiration = claims.FindFirst(JwtRegisteredClaimNames.Exp)?.Value
 			});
