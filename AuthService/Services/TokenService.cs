@@ -30,7 +30,7 @@ namespace AuthService.Services
 				new Claim(JwtRegisteredClaimNames.Sub, request.UserId.ToString()),
 				new Claim(JwtRegisteredClaimNames.Email, request.Email),
 				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-				new Claim(ClaimTypes.Name, request.Name),
+				new Claim(ClaimTypes.Name, request.Pseudo),
 				new Claim(ClaimTypes.NameIdentifier, request.UserId.ToString()),
 				new Claim(ClaimTypes.Role, request.Role ?? "User")
 			};
@@ -57,7 +57,7 @@ namespace AuthService.Services
 			{
 				Token = new JwtSecurityTokenHandler().WriteToken(token),
 				Email = request.Email,
-				Name = request.Name,
+				Pseudo = request.Pseudo,
 				Role = request.Role ?? "User",
 				Expiration = expiration
 			};

@@ -20,7 +20,6 @@ namespace UserService.Models
 		[EmailAddress]
 		public string Email { get; set; } = string.Empty;
 
-		// Password hash for authentication
 		public string? PasswordHash { get; set; }
 
 		public string? FirstName { get; set; }
@@ -29,9 +28,8 @@ namespace UserService.Models
 
 		public string? PhoneNumber { get; set; }
 
-		// Audit field
 		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-		public string? Role { get; set; } = "User"; // Default role
+		public string? Role { get; set; } = "User";
 	}
 }
