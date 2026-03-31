@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Mvc;
 using AuthService.Models;
 using AuthService.Services;
@@ -16,7 +17,7 @@ namespace AuthService.Controllers
 			_tokenService = tokenService;
 		}
 
-        // POST /api/auth/token - Générer un JWT token
+        // POST /api/auth/token - Gï¿½nï¿½rer un JWT token
         [HttpPost("token")]
 		public IActionResult GenerateToken([FromBody] TokenRequest request)
 		{
@@ -37,7 +38,7 @@ namespace AuthService.Controllers
 			{
 				IsValid = true,
 				UserId = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value,
-				Email = claims.FindFirst(ClaimIdentifiers.ClaimTypes.Email)?.Value,
+				Email = claims.FindFirst(ClaimTypes.Email)?.Value,
 				Name = claims.FindFirst(ClaimTypes.Name)?.Value,
 				Role = claims.FindFirst(ClaimTypes.Role)?.Value,
 				Expiration = claims.FindFirst(JwtRegisteredClaimNames.Exp)?.Value
