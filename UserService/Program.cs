@@ -1,13 +1,19 @@
 using Microsoft.EntityFrameworkCore;
-using ResourcesService.Data;
+using UserService.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<ResourceDbContext>(options =>
+builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("ResourceDbConnection")
+        builder.Configuration.GetConnectionString("UserDbConnection")
     )
 );
+
+// Register HttpClient for AuthService
+builder.Services.AddHttpClient("AuthService", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:6001");
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -28,7 +34,7 @@ if (app.Environment.IsDevelopment())
 {
 	using (var scope = app.Services.CreateScope())
 	{
-		var context = scope.ServiceProvider.GetRequiredService<ResourceDbContext>();
+		var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
 		context.Database.EnsureCreated();
 	}
 }
