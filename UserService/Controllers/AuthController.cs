@@ -41,7 +41,7 @@ namespace UserService.Controllers
 		public AuthController(UserDbContext context, IHttpClientFactory httpClientFactory)
 		{
 			_context = context;
-			_httpClient = httpClientFactory.CreateClient();
+			_httpClient = httpClientFactory.CreateClient("AuthService");
 		}
 
 		[HttpPost("register")]
@@ -125,7 +125,6 @@ namespace UserService.Controllers
 
 		private async Task<TokenResult> GetTokenFromAuthService(User user)
 		{
-			var authServiceUrl = "http://localhost:6000";
 			var tokenRequest = new
 			{
 				UserId = user.Id,
@@ -136,7 +135,7 @@ namespace UserService.Controllers
 				LastName = user.LastName
 			};
 
-			var response = await _httpClient.PostAsJsonAsync($"{authServiceUrl}/api/auth/token", tokenRequest);
+			var response = await _httpClient.PostAsJsonAsync("api/auth/token", tokenRequest);
 			response.EnsureSuccessStatusCode();
 			return await response.Content.ReadFromJsonAsync<TokenResult>()!;
 		}
