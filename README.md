@@ -332,8 +332,7 @@ ReservationDb: Server=(localdb)\\mssqllocaldb;Database=ReservationDb;Trusted_Con
 
 ## Équipe
 
-- **Es3n13** (Snoop Frogg)
-- **AI Assistant** (OpenClaw)
+- **Es3n13**
 
 ---
 
