@@ -19,7 +19,7 @@ namespace UserService.Controllers
 		}
 
 		// Modèles
-		public class LoginRequest
+		public class UserLoginRequest
 		{
 			public string Email { get; set; } = string.Empty;
 			public string Password { get; set; } = string.Empty;
@@ -31,7 +31,7 @@ namespace UserService.Controllers
 			public User User { get; set; } = null!;
 		}
 
-		public class RegisterRequest
+		public class UserRegisterRequest
 		{
 			public string FirstName { get; set; } = string.Empty;
 			public string LastName { get; set; } = string.Empty;
@@ -44,7 +44,7 @@ namespace UserService.Controllers
 
         // POST /api/users/register - Enregistrer un nouvel utilisateur
         [HttpPost("register")]
-		public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+		public async Task<IActionResult> Register([FromBody] UserRegisterRequest request)
 		{
 			if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
 			{
@@ -80,7 +80,7 @@ namespace UserService.Controllers
 
         // POST /api/users/login - Login utilisateur et obtenir un token JWT
         [HttpPost("login")]
-		public async Task<IActionResult> Login([FromBody] LoginRequest request)
+		public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
 		{
 			if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
 			{
