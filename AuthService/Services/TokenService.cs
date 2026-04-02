@@ -8,41 +8,44 @@ using AuthService.Data;
 
 namespace AuthService.Services
 {
-    public class TokenService : ITokenService
+    public class TokenService
     {
         private readonly IConfiguration _config;
         private readonly AuthDbContext _context;
 
         public TokenService(IConfiguration config, AuthDbContext context)
-            : base(config)
         {
             _config = config;
             _context = context;
         }
 
-        public async Task<string> GenerateTokenAsync(User user)
+        public string GenerateToken(UserService.Models.User user)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var jwtSettings = _config.GetSection("Jwt");
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.UserId),
-                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.Pseudo),
                 new Claim(ClaimTypes.Role, user.Role ?? "User")
             };
 
             var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow AddMinutes(30),
+                expires: DateTime.UtcNow.AddMinutes(30),
                 signingCredentials: credentials
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<string> GenerateRefreshTokenAsync(User user, string jwtId)
+        public async Task<string> GenerateRefreshTokenAsync(UserService.Models.User user, string jwtId)
         {
             var refreshTokenBytes = new byte[64];
             RandomNumberGenerator.GetBytes(refreshTokenBytes);
@@ -55,7 +58,7 @@ namespace AuthService.Services
             var refreshTokenEntity = new RefreshToken
             {
                 TokenId = Guid.NewGuid(),
-                UserId = user.UserId,
+                UserId = user.Id.ToString(),
                 Token = hashedRefreshToken,
                 JwtId = jwtId,
                 CreatedAt = DateTime.UtcNow,
@@ -99,14 +102,6 @@ namespace AuthService.Services
                 storedToken.RevokedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
             }
-        }
-
-        private string HashToken(string token)
-        {
-            using var sha256 = SHA256.Create();
-            var bytes = Encoding.UTF8.GetBytes(token);
-            var hash = sha256.ComputeHash(bytes);
-            return Convert.ToBase64String(hash);
         }
     }
 }
