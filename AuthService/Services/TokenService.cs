@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using AuthService.Data;
+using AuthService.Models;
 
 namespace AuthService.Services
 {
@@ -19,36 +20,50 @@ namespace AuthService.Services
             _context = context;
         }
 
-        public string GenerateToken(UserService.Models.User user)
+        public TokenResponse GenerateToken(TokenRequest user)
         {
             var jwtSettings = _config.GetSection("Jwt");
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
+            var securityKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!)
+            );
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var expiration = DateTime.UtcNow.AddMinutes(30);
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.Pseudo),
-                new Claim(ClaimTypes.Role, user.Role ?? "User")
-            };
+        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.Name, user.Pseudo),
+        new Claim(ClaimTypes.Role, user.Role ?? "User")
+    };
 
             var token = new JwtSecurityToken(
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
+                expires: expiration,
                 signingCredentials: credentials
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-        public async Task<string> GenerateRefreshTokenAsync(UserService.Models.User user, string jwtId)
+            return new TokenResponse
+            {
+                Token = tokenString,
+                Email = user.Email,
+                Pseudo = user.Pseudo,
+                Role = user.Role ?? "User",
+                Expiration = expiration
+            };
+        }
+        public async Task<string> GenerateRefreshTokenAsync(int userId, string jwtId)
         {
             var refreshTokenBytes = new byte[64];
-            RandomNumberGenerator.GetBytes(refreshTokenBytes);
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(refreshTokenBytes);
+
             var plainRefreshToken = Convert.ToBase64String(refreshTokenBytes);
 
             using var sha256 = SHA256.Create();
@@ -58,7 +73,7 @@ namespace AuthService.Services
             var refreshTokenEntity = new RefreshToken
             {
                 TokenId = Guid.NewGuid(),
-                UserId = user.Id.ToString(),
+                UserId = userId.ToString(),
                 Token = hashedRefreshToken,
                 JwtId = jwtId,
                 CreatedAt = DateTime.UtcNow,
@@ -101,6 +116,40 @@ namespace AuthService.Services
             {
                 storedToken.RevokedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
+            }
+        }
+
+        public ClaimsPrincipal? ValidateToken(string token)
+        {
+            var jwtSettings = _config.GetSection("Jwt");
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!);
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+
+                    ValidateAudience = true,
+                    ValidAudience = jwtSettings["Audience"],
+
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                }, out SecurityToken validatedToken);
+
+                if (validatedToken is not JwtSecurityToken jwtToken)
+                    return null;
+
+                return principal;
+            }
+            catch
+            {
+                return null;
             }
         }
     }

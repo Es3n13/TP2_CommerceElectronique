@@ -14,7 +14,10 @@ var secretKey = jwtSettings["SecretKey"]!
 
 builder.Services.AddHttpClient();
 builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseInMemoryDatabase("AuthDb"));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("AuthDbConnection")
+    )
+);
 builder.Services.AddScoped<TokenService>();
 
 builder.Services.AddAuthentication(options =>
