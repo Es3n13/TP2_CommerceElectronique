@@ -1,99 +1,112 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using AuthService.Models;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.EntityFrameworkCore;
+using AuthService.Data;
 
 namespace AuthService.Services
 {
-	public class TokenService
-	{
-		private readonly IConfiguration _configuration;
+    public class TokenService : ITokenService
+    {
+        private readonly IConfiguration _config;
+        private readonly AuthDbContext _context;
 
-		public TokenService(IConfiguration configuration)
-		{
-			_configuration = configuration;
-		}
+        public TokenService(IConfiguration config, AuthDbContext context)
+            : base(config)
+        {
+            _config = config;
+            _context = context;
+        }
 
-		public TokenResponse GenerateToken(TokenRequest request)
-		{
-			var secretKey = _configuration["Jwt:SecretKey"]!
-				?? throw new InvalidOperationException("JWT SecretKey is not configured.");
+        public async Task<string> GenerateTokenAsync(User user)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role ?? "User")
+            };
 
-			var issuer = _configuration["Jwt:Issuer"]!;
-			var audience = _configuration["Jwt:Audience"]!;
-			var expirationMinutes = int.Parse(_configuration["Jwt:ExpirationInMinutes"] ?? "60");
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow AddMinutes(30),
+                signingCredentials: credentials
+            );
 
-			var claims = new List<Claim>
-			{
-				new Claim(JwtRegisteredClaimNames.Sub, request.UserId.ToString()),
-				new Claim(JwtRegisteredClaimNames.Email, request.Email),
-				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-				new Claim(ClaimTypes.Name, request.Pseudo),
-				new Claim(ClaimTypes.NameIdentifier, request.UserId.ToString()),
-				new Claim(ClaimTypes.Role, request.Role ?? "User")
-			};
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
 
-			if (!string.IsNullOrEmpty(request.FirstName))
-				claims.Add(new Claim("FirstName", request.FirstName));
+        public async Task<string> GenerateRefreshTokenAsync(User user, string jwtId)
+        {
+            var refreshTokenBytes = new byte[64];
+            RandomNumberGenerator.GetBytes(refreshTokenBytes);
+            var plainRefreshToken = Convert.ToBase64String(refreshTokenBytes);
 
-			if (!string.IsNullOrEmpty(request.LastName))
-				claims.Add(new Claim("LastName", request.LastName));
+            using var sha256 = SHA256.Create();
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(plainRefreshToken));
+            var hashedRefreshToken = Convert.ToBase64String(hashedBytes);
 
-			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-			var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-			var expiration = DateTime.UtcNow.AddMinutes(expirationMinutes);
+            var refreshTokenEntity = new RefreshToken
+            {
+                TokenId = Guid.NewGuid(),
+                UserId = user.UserId,
+                Token = hashedRefreshToken,
+                JwtId = jwtId,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                RevokedAt = null,
+                ReplacedByToken = null
+            };
 
-			var token = new JwtSecurityToken(
-				issuer: issuer,
-				audience: audience,
-				claims: claims,
-				expires: expiration,
-				signingCredentials: credentials
-			);
+            _context.RefreshTokens.Add(refreshTokenEntity);
+            await _context.SaveChangesAsync();
 
-			return new TokenResponse
-			{
-				Token = new JwtSecurityTokenHandler().WriteToken(token),
-				Email = request.Email,
-				Pseudo = request.Pseudo,
-				Role = request.Role ?? "User",
-				Expiration = expiration
-			};
-		}
+            return plainRefreshToken;
+        }
 
-		public ClaimsPrincipal? ValidateToken(string token)
-		{
-			var secretKey = _configuration["Jwt:SecretKey"]!
-				?? throw new InvalidOperationException("JWT SecretKey is not configured.");
+        public async Task<bool> ValidateRefreshTokenAsync(string plainRefreshToken)
+        {
+            using var sha256 = SHA256.Create();
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(plainRefreshToken));
+            var hashedRefreshToken = Convert.ToBase64String(hashedBytes);
 
-			var issuer = _configuration["Jwt:Issuer"]!;
-			var audience = _configuration["Jwt:Audience"]!;
+            var storedToken = await _context.RefreshTokens
+                .FirstOrDefaultAsync(rt => rt.Token == hashedRefreshToken);
 
-			var tokenHandler = new JwtSecurityTokenHandler();
-			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            if (storedToken == null)
+                return false;
 
-			try
-			{
-				var validationParameters = new TokenValidationParameters
-				{
-					ValidateIssuer = true,
-					ValidateAudience = true,
-					ValidateLifetime = true,
-					ValidateIssuerSigningKey = true,
-					ValidIssuer = issuer,
-					ValidAudience = audience,
-					IssuerSigningKey = key,
-					ClockSkew = TimeSpan.Zero
-				};
+            return !storedToken.RevokedAt.HasValue && storedToken.ExpiresAt > DateTime.UtcNow;
+        }
 
-				return tokenHandler.ValidateToken(token, validationParameters, out _);
-			}
-			catch
-			{
-				return null;
-			}
-		}
-	}
+        public async Task RevokeRefreshTokenAsync(string plainRefreshToken, string? reason = null)
+        {
+            using var sha256 = SHA256.Create();
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(plainRefreshToken));
+            var hashedRefreshToken = Convert.ToBase64String(hashedBytes);
+
+            var storedToken = await _context.RefreshTokens
+                .FirstOrDefaultAsync(rt => rt.Token == hashedRefreshToken);
+
+            if (storedToken != null)
+            {
+                storedToken.RevokedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        private string HashToken(string token)
+        {
+            using var sha256 = SHA256.Create();
+            var bytes = Encoding.UTF8.GetBytes(token);
+            var hash = sha256.ComputeHash(bytes);
+            return Convert.ToBase64String(hash);
+        }
+    }
 }
