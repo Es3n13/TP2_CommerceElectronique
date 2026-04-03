@@ -20,7 +20,7 @@ namespace PaymentService.Controllers
 			_context = context;
 		}
 
-		// POST /api/payments/create - Create a payment intent
+		// POST /api/payments/create - Créer un payment intent
 		[HttpPost("create")]
 		public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentRequest request)
 		{
@@ -43,8 +43,8 @@ namespace PaymentService.Controllers
 					request.PaymentMethodId
 				);
 
-				// If payment was confirmed and succeeded, update reservation status
-				if (!string.IsNullOrEmpty(request.PaymentMethodId) && paymentIntent.Status == "succeeded")
+                // Si le paiement a été confirmé immédiatement mettre à jour le statut de la réservation
+                if (!string.IsNullOrEmpty(request.PaymentMethodId) && paymentIntent.Status == "succeeded")
 				{
 					await _stripeService.UpdateReservationStatusAsync(request.ReservationId, "Confirmed");
 				}
@@ -69,7 +69,7 @@ namespace PaymentService.Controllers
 			}
 		}
 
-		// GET /api/payments/{id} - Get payment details
+		// GET /api/payments/{id} - Get les détails du paiement
 		[HttpGet("{id}")]
 		public async Task<IActionResult> GetPayment(int id)
 		{
@@ -107,7 +107,7 @@ namespace PaymentService.Controllers
 			}
 		}
 
-		// GET /api/payments/reservation/{reservationId} - Get payments by reservation
+		// GET /api/payments/reservation/{reservationId} - Get payments par reservation
 		[HttpGet("reservation/{reservationId}")]
 		public async Task<IActionResult> GetPaymentsByReservation(int reservationId)
 		{
@@ -119,7 +119,7 @@ namespace PaymentService.Controllers
 			return Ok(payments);
 		}
 
-		// POST /api/payments/{id}/confirm - Confirm payment
+		// POST /api/payments/{id}/confirm - Confirme le paiement
 		[HttpPost("{id}/confirm")]
 		public async Task<IActionResult> ConfirmPayment(int id)
 		{
@@ -134,15 +134,15 @@ namespace PaymentService.Controllers
 			{
 				var paymentIntent = await _stripeService.ConfirmPaymentIntentAsync(payment.StripePaymentIntentId);
 
-				// Update payment status based on Stripe response
-				await _stripeService.UpdatePaymentStatusAsync(
+                // Mettre à jour le paiement dans la base de données
+                await _stripeService.UpdatePaymentStatusAsync(
 					payment.Id,
 					paymentIntent.Status,
 					paymentIntent.Status == "requires_payment_method" ? null : paymentIntent.LastPaymentError?.Message
 				);
 
-				// Update reservation status if payment succeeded
-				if (paymentIntent.Status == "succeeded")
+                // Mettre à jour le statut de la réservation si le paiement a réussi
+                if (paymentIntent.Status == "succeeded")
 				{
 					await _stripeService.UpdateReservationStatusAsync(payment.ReservationId, "Confirmed");
 				}
@@ -167,8 +167,8 @@ namespace PaymentService.Controllers
 			}
 		}
 
-		// POST /api/payments/{id}/refund - Refund payment
-		[HttpPost("{id}/refund")]
+        // POST /api/payments/{id}/refund - Rembourser un paiement
+        [HttpPost("{id}/refund")]
 		public async Task<IActionResult> RefundPayment(int id, [FromBody] RefundRequest? request = null)
 		{
 			var payment = await _context.Payments.FindAsync(id);

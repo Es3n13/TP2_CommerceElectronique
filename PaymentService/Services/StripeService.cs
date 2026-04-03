@@ -32,8 +32,8 @@ namespace PaymentService.Services
 				}
 			};
 
-			// If payment method provided, attach it and auto-confirm
-			if (!string.IsNullOrEmpty(paymentMethodId))
+            // si la méthode de paiement est déjà fournie, tenter de confirmer immédiatement le paiement
+            if (!string.IsNullOrEmpty(paymentMethodId))
 			{
 				options.PaymentMethod = paymentMethodId;
 				options.Confirm = true;
