@@ -18,18 +18,18 @@ Système de réservation en ligne basé sur une microservices architecture avec 
 
 ---
 
-## ✅ Statut du Projet (mis à jour: 1 avril 2026)
+## ✅ Statut du Projet (mis à jour: 3 avril 2026)
 
-**Phase 1: Core MVP - 40% complet**
+**Phase 1: Core MVP - 100% COMPLETE ✅**
 
-| Service | Statut | Database | Authentification | Notes |
-|---------|--------|----------|------------------|-------|
-| **AuthService** | ✅ Opérationnel | AuthDb | JWT | Token generation + validation + refresh tokens |
-| **UserService** | ✅ Complet | UserDb | Via AuthService | Register, login, CRUD des utilisateurs |
-| **ResourcesService** | ✅ Complet | ResourceDb | Non (TODO) | CRUD des ressources |
-| **ReservationsService** | ✅ Complet | ReservationDb | Non (TODO) | CRUD des réservations |
-| **PaymentService** | ✅ Complet | PaymentDb | Non (TODO) | Stripe integration, payment processing |
-| **ApiGateway** | ❌ Pas commencé | - | - | TODO |
+| Service | Statut | Database | Authentification | Communication |
+|---------|--------|----------|------------------|---------------|
+| **AuthService** | ✅ Opérationnel | AuthDb | JWT | UserService ↔ AuthService |
+| **UserService** | ✅ Complet | UserDb | Via AuthService | Crée tokens et valide |
+| **ResourcesService** | ✅ Complet | ResourceDb | Non (TODO) | Non connecté |
+| **ReservationsService** | ✅ Complet | ReservationDb | Non (TODO) | PaymentService → Reservations ✅ |
+| **PaymentService** | ✅ Complet | PaymentDb | Non (TODO) | ReservationsService status updates ✅ |
+| **ApiGateway** | ❌ Pas commencé | - | - | - |
 
 ---
 
@@ -324,27 +324,29 @@ PaymentDb: Server=(localdb)\\mssqllocaldb;Database=PaymentDb;Trusted_Connection=
 
 ---
 
-## 🚀 Prochaines Étapes (Priorisation)
+## 🚀 Prochaines Étapes (Phase 2 - Integration)
 
 1. **Protection des endpoints** ⏰
    - Ajouter `[Authorize]` sur ResourcesService
    - Ajouter `[Authorize]` sur ReservationsService
-   - Valider tokens JWT
+   - Ajouter `[Authorize]` sur PaymentService
+   - Valider tokens JWT via middleware
 
-2. **Ocelot API Gateway** ⏰
+2. **Service Communication** ⏰
+   - ReservationsService → UserService (valider utilisateur)
+   - ReservationsService → ResourcesService (vérifier disponibilité)
+   - ResourcesService → UserService (filtre par utilisateur)
+
+3. **Ocelot API Gateway** ⏰
    - Configurer ApiGateway project
    - Router les requêtes aux microservices
    - Centraliser l'authentification
+   - Aggrégation Swagger docs
 
-3. **Middleware de validation JWT** ⏰
-   - Valider tokens dans chaque service
-   - Extraire les claims utilisateur
-   - Mettre en place le contexte utilisateur
-
-4. **Status endpoint for ReservationsService** ⏰
-   - Ajouter PUT /api/reservations/{id} endpoint
-   - Permettre mises à jour de statut
-   - Intégration avec PaymentService
+4. **Tests d'intégration** ⏰
+   - Test flow complet: register → login → jwt → reserve → pay
+   - Test scénarios d'erreur (paiement échoué, service down)
+   - Documenter patterns de communication entre services
 
 ---
 
@@ -379,14 +381,21 @@ Ce projet est un travail académique pour l'UQAR.
 
 ## 📝 Changelog Récent (V.Alpha)
 
+### 3 avril 2026
+- ✅ Phase 1 Core MVP - 100% COMPLETE
+- ✅ PaymentDbContext fully implementation avec indexes
+- ✅ Payment method support (PaymentMethodId parameter)
+- ✅ Auto-confirmation de paiements Stripe (pm_card_visa, pm_card_mastercard)
+- ✅ PaymentService ↔ ReservationsService communication working
+- ✅ Test de paiement complet avec succès: create → pay → confirm reservation statut
+- ✅ Solution file TP2_CommerceElectronique.sln pour Visual Studio
+
 ### 2-3 avril 2026
 - ✅ Création du service PaymentService
 - ✅ Intégration Stripe.net (v47.3.0)
 - ✅ Implémentation payment intents, confirmation, refunds
 - ✅ Ajout PaymentDbContext avec SQL Server (PaymentDb)
-- ✅ Création solution file TP2_CommerceElectronique.sln
-- ✅ Configuration ports standardisée (AuthService: 6001, UserService: 5000/7075, ResourcesService: 5001, ReservationsService: 5002, PaymentService: 5003)
-- ✅ Mise à jour README avec documentation PaymentService
+- ✅ Configuration ports standardisée
 
 ### 1-2 avril 2026
 - ✅ Création du service AuthService
@@ -394,7 +403,6 @@ Ce projet est un travail académique pour l'UQAR.
 - ✅ Intégration AuthService ↔ UserService via HttpClient
 - ✅ Ajout AuthDbContext avec SQL Server
 - ✅ Correction des ports (6001 pour AuthService)
-- ✅ Correction Swagger (conflits de noms de classes)
 - ✅ Flux d'authentification complet
 
 ### 31 mars 2026
