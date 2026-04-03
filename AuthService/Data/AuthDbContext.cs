@@ -32,11 +32,11 @@ namespace AuthService.Data
     {
         public Guid TokenId { get; set; }
         public string? UserId { get; set; }
-        public string Token { get; set; }  // Will store HASHED token
-        public string JwtId { get; set; }   // JTI claim from JWT
+        public string Token { get; set; }
+        public string JwtId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime ExpiresAt { get; set; }
         public DateTime? RevokedAt { get; set; }
-        public string? ReplacedByToken { get; set; }  // References new TokenId
+        public string? ReplacedByToken { get; set; }
     }
 }

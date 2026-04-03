@@ -3,9 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UserService.Models
 {
-	/// <summary>
-	/// User entity for the userservice database
-	/// </summary>
 	[Table("Users")]
 	public class User
 	{
