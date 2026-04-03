@@ -18,7 +18,7 @@ namespace PaymentService.Services
 			StripeConfiguration.ApiKey = _config["Stripe:SecretKey"];
 		}
 
-		public async Task<PaymentIntent> CreatePaymentIntentAsync(decimal amount, string description, int reservationId)
+		public async Task<PaymentIntent> CreatePaymentIntentAsync(decimal amount, string description, int reservationId, string? paymentMethodId = null)
 		{
 			var options = new PaymentIntentCreateOptions
 			{
@@ -31,6 +31,14 @@ namespace PaymentService.Services
 				}
 			};
 
+			// If payment method provided, attach it and auto-confirm
+			if (!string.IsNullOrEmpty(paymentMethodId))
+			{
+				options.PaymentMethod = paymentMethodId;
+				options.Confirm = true;
+				options.ReturnUrl = _config["App:BaseUrl"] ?? "http://localhost:5003/success";
+			}
+
 			var service = new PaymentIntentService();
 			var paymentIntent = await service.CreateAsync(options);
 
@@ -40,10 +48,10 @@ namespace PaymentService.Services
 				ReservationId = reservationId,
 				Amount = amount,
 				StripePaymentIntentId = paymentIntent.Id,
-				Status = "Pending",
+				Status = paymentIntent.Status == "succeeded" ? "Succeeded" : "Pending",
 				Currency = "cad",
 				CreatedAt = DateTime.UtcNow,
-				CompletedAt = null
+				CompletedAt = paymentIntent.Status == "succeeded" ? DateTime.UtcNow : null
 			};
 
 			_context.Payments.Add(payment);

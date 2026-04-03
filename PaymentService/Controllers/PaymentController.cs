@@ -37,8 +37,15 @@ namespace PaymentService.Controllers
 				var paymentIntent = await _stripeService.CreatePaymentIntentAsync(
 					request.Amount,
 					request.Description ?? $"Payment for reservation {request.ReservationId}",
-					request.ReservationId
+					request.ReservationId,
+					request.PaymentMethodId
 				);
+
+				// If payment was confirmed and succeeded, update reservation status
+				if (!string.IsNullOrEmpty(request.PaymentMethodId) && paymentIntent.Status == "succeeded")
+				{
+					await _stripeService.UpdateReservationStatusAsync(request.ReservationId, "Confirmed");
+				}
 
 				return Ok(new
 				{
@@ -207,6 +214,7 @@ namespace PaymentService.Controllers
 		public decimal Amount { get; set; }
 		public int ReservationId { get; set; }
 		public string? Description { get; set; }
+		public string? PaymentMethodId { get; set; }
 	}
 
 	public class RefundRequest
