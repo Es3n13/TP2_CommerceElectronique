@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PaymentService.Services;
 using PaymentService.Models;
+using PaymentService.Data;
 using Stripe;
 
 namespace PaymentService.Controllers

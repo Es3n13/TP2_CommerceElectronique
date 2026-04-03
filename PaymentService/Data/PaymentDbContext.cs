@@ -31,6 +31,7 @@ namespace PaymentService.Data
                 entity.HasIndex(e => e.Status);
 
                 // Valeurs par défaut
+                entity.Property(e => e.Amount).HasPrecision(18, 2);
                 entity.Property(e => e.Status).HasDefaultValue("Pending");
                 entity.Property(e => e.Currency).HasDefaultValue("cad");
             });

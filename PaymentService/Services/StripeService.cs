@@ -1,5 +1,6 @@
 using Stripe;
 using PaymentService.Models;
+using PaymentService.Data;
 
 namespace PaymentService.Services
 {
@@ -34,8 +35,8 @@ namespace PaymentService.Services
 			var service = new PaymentIntentService();
 			var paymentIntent = await service.CreateAsync(options);
 
-			// Save payment record to database
-			var payment = new Payment
+            // Sauvegarder le paiement dans la base de données
+            var payment = new Payment
 			{
 				ReservationId = reservationId,
 				Amount = amount,
