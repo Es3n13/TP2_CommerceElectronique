@@ -1,11 +1,10 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using MMLib.SwaggerForOcelot.Configuration;
-using MMLib.SwaggerForOcelot.Middleware;
-using MMLib.SwaggerForOcelot.SwaggerGen;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using MMLib.SwaggerForOcelot.Configuration;
+using MMLib.SwaggerForOcelot.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,34 +46,6 @@ builder.Services.AddAuthorization();
 builder.Services.AddSwaggerForOcelot(builder.Configuration, (o) =>
 {
     o.PathToSwaggerGenerator = "/swagger/v1/swagger.json";
-});
-
-// Configure JWT security definition for Swagger
-builder.Services.AddSwaggerGen(options =>
-{
-    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme",
-        Name = "Authorize",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-
-    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
-        {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-            {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
-                {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
 });
 
 // Ocelot configuration
