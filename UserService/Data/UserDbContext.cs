@@ -3,9 +3,7 @@ using UserService.Models;
 
 namespace UserService.Data
 {
-	/// <summary>
-	/// Database context for UserService
-	/// </summary>
+
 	public class UserDbContext : DbContext
 	{
 		public UserDbContext(DbContextOptions<UserDbContext> options)
@@ -19,13 +17,12 @@ namespace UserService.Data
 		{
 			base.OnModelCreating(modelBuilder);
 
-			// Configure User entity
 			modelBuilder.Entity<User>(entity =>
 			{
-				// Email should be unique
-				entity.HasIndex(e => e.Email).IsUnique();
+                // Le email devrait être unique
+                entity.HasIndex(e => e.Email).IsUnique();
 
-				// Default values
+				// Valeur pas défaut
 				entity.Property(e => e.Role).HasDefaultValue("User");
 			});
 		}

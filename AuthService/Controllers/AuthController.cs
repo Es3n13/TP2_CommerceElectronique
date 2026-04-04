@@ -17,7 +17,7 @@ namespace AuthService.Controllers
 			_tokenService = tokenService;
 		}
 
-        // POST /api/auth/token - G�n�rer un JWT token
+        // POST /api/auth/token - Générer un JWT token
         [HttpPost("token")]
 		public IActionResult GenerateToken([FromBody] TokenRequest request)
 		{

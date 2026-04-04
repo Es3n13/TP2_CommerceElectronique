@@ -1,99 +1,156 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.EntityFrameworkCore;
+using AuthService.Data;
 using AuthService.Models;
 
 namespace AuthService.Services
 {
-	public class TokenService
-	{
-		private readonly IConfiguration _configuration;
+    public class TokenService
+    {
+        private readonly IConfiguration _config;
+        private readonly AuthDbContext _context;
 
-		public TokenService(IConfiguration configuration)
-		{
-			_configuration = configuration;
-		}
+        public TokenService(IConfiguration config, AuthDbContext context)
+        {
+            _config = config;
+            _context = context;
+        }
 
-		public TokenResponse GenerateToken(TokenRequest request)
-		{
-			var secretKey = _configuration["Jwt:SecretKey"]!
-				?? throw new InvalidOperationException("JWT SecretKey is not configured.");
+        public TokenResponse GenerateToken(TokenRequest user)
+        {
+            var jwtSettings = _config.GetSection("Jwt");
+            var securityKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!)
+            );
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-			var issuer = _configuration["Jwt:Issuer"]!;
-			var audience = _configuration["Jwt:Audience"]!;
-			var expirationMinutes = int.Parse(_configuration["Jwt:ExpirationInMinutes"] ?? "60");
+            var expiration = DateTime.UtcNow.AddMinutes(30);
 
-			var claims = new List<Claim>
-			{
-				new Claim(JwtRegisteredClaimNames.Sub, request.UserId.ToString()),
-				new Claim(JwtRegisteredClaimNames.Email, request.Email),
-				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-				new Claim(ClaimTypes.Name, request.Pseudo),
-				new Claim(ClaimTypes.NameIdentifier, request.UserId.ToString()),
-				new Claim(ClaimTypes.Role, request.Role ?? "User")
-			};
+            var claims = new[]
+            {
+        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.Name, user.Pseudo),
+        new Claim(ClaimTypes.Role, user.Role ?? "User")
+    };
 
-			if (!string.IsNullOrEmpty(request.FirstName))
-				claims.Add(new Claim("FirstName", request.FirstName));
+            var token = new JwtSecurityToken(
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
+                claims: claims,
+                expires: expiration,
+                signingCredentials: credentials
+            );
 
-			if (!string.IsNullOrEmpty(request.LastName))
-				claims.Add(new Claim("LastName", request.LastName));
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-			var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-			var expiration = DateTime.UtcNow.AddMinutes(expirationMinutes);
+            return new TokenResponse
+            {
+                Token = tokenString,
+                Email = user.Email,
+                Pseudo = user.Pseudo,
+                Role = user.Role ?? "User",
+                Expiration = expiration
+            };
+        }
+        public async Task<string> GenerateRefreshTokenAsync(int userId, string jwtId)
+        {
+            var refreshTokenBytes = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(refreshTokenBytes);
 
-			var token = new JwtSecurityToken(
-				issuer: issuer,
-				audience: audience,
-				claims: claims,
-				expires: expiration,
-				signingCredentials: credentials
-			);
+            var plainRefreshToken = Convert.ToBase64String(refreshTokenBytes);
 
-			return new TokenResponse
-			{
-				Token = new JwtSecurityTokenHandler().WriteToken(token),
-				Email = request.Email,
-				Pseudo = request.Pseudo,
-				Role = request.Role ?? "User",
-				Expiration = expiration
-			};
-		}
+            using var sha256 = SHA256.Create();
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(plainRefreshToken));
+            var hashedRefreshToken = Convert.ToBase64String(hashedBytes);
 
-		public ClaimsPrincipal? ValidateToken(string token)
-		{
-			var secretKey = _configuration["Jwt:SecretKey"]!
-				?? throw new InvalidOperationException("JWT SecretKey is not configured.");
+            var refreshTokenEntity = new RefreshToken
+            {
+                TokenId = Guid.NewGuid(),
+                UserId = userId.ToString(),
+                Token = hashedRefreshToken,
+                JwtId = jwtId,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                RevokedAt = null,
+                ReplacedByToken = null
+            };
 
-			var issuer = _configuration["Jwt:Issuer"]!;
-			var audience = _configuration["Jwt:Audience"]!;
+            _context.RefreshTokens.Add(refreshTokenEntity);
+            await _context.SaveChangesAsync();
 
-			var tokenHandler = new JwtSecurityTokenHandler();
-			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            return plainRefreshToken;
+        }
 
-			try
-			{
-				var validationParameters = new TokenValidationParameters
-				{
-					ValidateIssuer = true,
-					ValidateAudience = true,
-					ValidateLifetime = true,
-					ValidateIssuerSigningKey = true,
-					ValidIssuer = issuer,
-					ValidAudience = audience,
-					IssuerSigningKey = key,
-					ClockSkew = TimeSpan.Zero
-				};
+        public async Task<bool> ValidateRefreshTokenAsync(string plainRefreshToken)
+        {
+            using var sha256 = SHA256.Create();
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(plainRefreshToken));
+            var hashedRefreshToken = Convert.ToBase64String(hashedBytes);
 
-				return tokenHandler.ValidateToken(token, validationParameters, out _);
-			}
-			catch
-			{
-				return null;
-			}
-		}
-	}
+            var storedToken = await _context.RefreshTokens
+                .FirstOrDefaultAsync(rt => rt.Token == hashedRefreshToken);
+
+            if (storedToken == null)
+                return false;
+
+            return !storedToken.RevokedAt.HasValue && storedToken.ExpiresAt > DateTime.UtcNow;
+        }
+
+        public async Task RevokeRefreshTokenAsync(string plainRefreshToken, string? reason = null)
+        {
+            using var sha256 = SHA256.Create();
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(plainRefreshToken));
+            var hashedRefreshToken = Convert.ToBase64String(hashedBytes);
+
+            var storedToken = await _context.RefreshTokens
+                .FirstOrDefaultAsync(rt => rt.Token == hashedRefreshToken);
+
+            if (storedToken != null)
+            {
+                storedToken.RevokedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public ClaimsPrincipal? ValidateToken(string token)
+        {
+            var jwtSettings = _config.GetSection("Jwt");
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!);
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+
+                    ValidateAudience = true,
+                    ValidAudience = jwtSettings["Audience"],
+
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                }, out SecurityToken validatedToken);
+
+                if (validatedToken is not JwtSecurityToken jwtToken)
+                    return null;
+
+                return principal;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+    }
 }

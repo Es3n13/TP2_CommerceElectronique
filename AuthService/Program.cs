@@ -2,7 +2,9 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Microsoft.EntityFrameworkCore;
 using AuthService.Services;
+using AuthService.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,11 @@ var secretKey = jwtSettings["SecretKey"]!
     ?? throw new InvalidOperationException("JWT SecretKey is not configured.");
 
 builder.Services.AddHttpClient();
+builder.Services.AddDbContext<AuthDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("AuthDbConnection")
+    )
+);
 builder.Services.AddScoped<TokenService>();
 
 builder.Services.AddAuthentication(options =>

@@ -19,10 +19,8 @@
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
-		<!-- JWT packages -->
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
-		<!-- OpenApi namespace for Swagger security -->
-		<PackageReference Include="Microsoft.OpenApi" Version="2.4.1" />
+		<!-- Stripe.NET nuget package -->
+		<PackageReference Include="Stripe.net" Version="47.3.0" />
 	</ItemGroup>
 
 </Project>
