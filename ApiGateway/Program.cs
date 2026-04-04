@@ -41,7 +41,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// SwaggerServicesForOcelot: Prepare Swagger aggregation for all services
+// Add Swagger services for Ocelot aggregation
 builder.Services.AddSwaggerForOcelot(builder.Configuration);
 
 // Ocelot configuration
@@ -49,10 +49,10 @@ builder.Services.AddOcelot(builder.Configuration);
 
 var app = builder.Build();
 
-// Swagger endpoint: UI for aggregated Swagger (using Swashbuckle + MMLib)
+// Enable Swagger UI (Swashbuckle)
 app.UseSwagger();
 
-// SwaggerForOcelot endpoint: Fetch and aggregate Swagger from all services
+// Enable SwaggerForOcelot middleware to aggregate Swagger from downstream services
 app.UseSwaggerForOcelot(builder.Configuration);
 
 // Enable authentication middleware
