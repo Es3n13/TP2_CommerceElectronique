@@ -4,7 +4,6 @@ using Microsoft.IdentityModel.Tokens;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using MMLib.SwaggerForOcelot;
-using MMLib.SwaggerForOcelot.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,7 +41,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// SwaggerForOcelot services (aggregates Swagger from all services)
+// SwaggerServicesForOcelot: Prepare Swagger aggregation for all services
 builder.Services.AddSwaggerForOcelot(builder.Configuration);
 
 // Ocelot configuration
@@ -50,7 +49,10 @@ builder.Services.AddOcelot(builder.Configuration);
 
 var app = builder.Build();
 
-// Enable SwaggerForOcelot (aggregates Swagger from all services)
+// Swagger endpoint: UI for aggregated Swagger (using Swashbuckle + MMLib)
+app.UseSwagger();
+
+// SwaggerForOcelot endpoint: Fetch and aggregate Swagger from all services
 app.UseSwaggerForOcelot(builder.Configuration);
 
 // Enable authentication middleware
