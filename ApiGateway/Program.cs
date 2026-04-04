@@ -3,21 +3,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using MMLib.SwaggerForOcelot;
+using MMLib.SwaggerForOcelot.DependencyInjection;
+using MMLib.SwaggerForOcelot.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load Ocelot configuration
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
-    .AddEnvironmentVariables()
-    .AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+    .AddEnvironmentVariables();
 
-// Configure JWT authentication at gateway level
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var secretKey = jwtSettings["SecretKey"]
-    ?? "sk_dyb3FYyquQA3w8ZtrRVeJS7iIn2IXA2g";
+var secretKey = jwtSettings["SecretKey"] ?? "sk_dyb3FYyquQA3w8ZtrRVeJS7iIn2IXA2g";
 
 builder.Services.AddAuthentication(options =>
 {
@@ -40,26 +37,18 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
-
-// Add Swagger services for Ocelot aggregation
-builder.Services.AddSwaggerForOcelot(builder.Configuration);
-
-// Ocelot configuration
 builder.Services.AddOcelot(builder.Configuration);
+builder.Services.AddSwaggerForOcelot(builder.Configuration);
 
 var app = builder.Build();
 
-// Enable Swagger UI (Swashbuckle)
-app.UseSwagger();
-
-// Enable SwaggerForOcelot middleware to aggregate Swagger from downstream services
-app.UseSwaggerForOcelot(builder.Configuration);
-
-// Enable authentication middleware
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Use Ocelot
-await app.UseOcelot();
+app.UseSwaggerForOcelotUI(opt =>
+{
+    opt.PathToSwaggerGenerator = "/swagger/docs";
+});
 
+await app.UseOcelot();
 app.Run();
