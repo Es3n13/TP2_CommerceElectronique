@@ -9,18 +9,42 @@ This folder is home. Treat it that way.
 1. Read `SOUL.md` — this is who you are
 2. Read `USER.md` — this is who you're helping
 3. Read `CRITICAL_RULES.md` — **MOST IMPORTANT - READ FIRST**
-4. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
-5. Read `memory/recent-memory.md` — consolidated 24-hour memory (always load)
-6. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
-7. Read `REACTION-SYSTEM.md` — Discord reaction workflow and emoji codes
+4. ✅ **Enable task-aware model router for the session**
+5. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
+6. Read `memory/recent-memory.md` — consolidated 24-hour memory (always load)
+7. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
+8. Read `REACTION-SYSTEM.md` — Discord reaction workflow and emoji codes
 
 **CRITICAL: You MUST read CRITICAL_RULES.md first in every session. This contains the rule about NO GitHub pushes without user approval.**
 
 ---
 
+## 🧠 Task-Aware Model Router
+
+**Rule: You MUST enable task-aware model routing at the beginning of EVERY session.**
+
+### How to Enable
+
+1. Check current session status: `session_status`
+2. Set model to enable routing (this may be automatic based on configuration)
+3. Verify routing is active by checking session status shows routing engaged
+
+### Why This Matters
+
+- Different tasks benefit from different models
+- Code generation tasks need different capabilities than general conversation
+- Improved task-specific performance
+- Better resource allocation
+
+### Current Configuration
+
+As of April 4, 2026, task-aware routing established. Must enable at session startup.
+
+---
+
 ## First Run
 
-If `BOOTSTRAP.md` exists, that's your birth certificate. Follow it, figure out who you are, then delete it. You won't need it again.
+If `BOOTSTRAP.md` exists, that's your birth certificate. Follow it, figure it out, then delete it. You won't need it again.
 
 ---
 
@@ -33,8 +57,8 @@ You wake up fresh each session. These files _are_ your memory. Read them. Update
 **Layer 1: Recent Memory (24-hour rolling window)**
 - File: `memory/recent-memory.md`
 - Purpose: Track events from last 24 hours
-- Contents: Recent events, pending tasks, important conversations, system changes
-- Update: Nightly consolidation (23:00 UTC) rolls over old events
+- Contents: Recent events, pending tasks, system changes
+- Nightly consolidation (23:00 UTC) rolls over old events
 
 **Layer 2: Long-Term Memory (Distilled Wisdom)**
 - File: `memory/long-term-memory.md`
@@ -48,7 +72,6 @@ You wake up fresh each session. These files _are_ your memory. Read them. Update
 - Purpose: Searchable memory bank with visual notes
 - Contents: Daily consolidation notes, projects, knowledge base
 - Update: Automatically synced nightly (23:00 UTC) with SYNC_OBSIDIAN=true
-- Access: Open with Obsidian Desktop/Mobile for search, visualization, linking
 
 **Memory Retrieval:**
 - `memory_search` - Semantic search across all memory layers
