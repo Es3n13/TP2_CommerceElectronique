@@ -9,6 +9,16 @@ builder.Services.AddDbContext<ReservationDbContext>(options =>
     )
 );
 
+builder.Services.AddHttpClient("UserService", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5000/api/users/");
+});
+
+builder.Services.AddHttpClient("ResourcesService", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5001/api/resources/");
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

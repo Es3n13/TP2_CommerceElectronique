@@ -9,6 +9,11 @@ builder.Services.AddDbContext<ResourceDbContext>(options =>
     )
 );
 
+builder.Services.AddHttpClient("UserService", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5000/api/users/");
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
