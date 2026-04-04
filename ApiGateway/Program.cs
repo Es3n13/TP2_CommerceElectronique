@@ -38,7 +38,10 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 builder.Services.AddOcelot(builder.Configuration);
-builder.Services.AddSwaggerForOcelot(builder.Configuration);
+builder.Services.AddSwaggerForOcelot(builder.Configuration, setup =>
+{
+    setup.GenerateSwaggerDocsForGatewayItSelf = true;
+});
 
 var app = builder.Build();
 
@@ -47,7 +50,7 @@ app.UseAuthorization();
 
 app.UseSwaggerForOcelotUI(opt =>
 {
-    opt.PathToSwaggerGenerator = "/swagger/docs";
+    opt.PathToSwaggerGenerator = "/swagger/v1/swagger.json";
 });
 
 await app.UseOcelot();
