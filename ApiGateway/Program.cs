@@ -45,9 +45,12 @@ var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Register Swagger endpoints with Ocelot
+app.UseSwaggerForOcelot(); // This registers the Swagger generator endpoints
+
 app.UseSwaggerForOcelotUI(opt =>
 {
-    opt.PathToSwaggerGenerator = "/swagger/docs/{swaggerKey}/swagger.json";
+    opt.PathToSwaggerGenerator = "/swagger/docs";
 });
 
 await app.UseOcelot();
