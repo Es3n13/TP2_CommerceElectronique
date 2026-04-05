@@ -12,7 +12,7 @@ This folder is home. Treat it that way.
 4. ✅ **Enable task-aware model router for the session**
 5. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
 6. Read `memory/recent-memory.md` — consolidated 24-hour memory (always load)
-7. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
+7. **If in MAIN SESSION** (direct chat with your human): Also read `memory/long-term-memory.md`
 8. Read `REACTION-SYSTEM.md` — Discord reaction workflow and emoji codes
 
 **CRITICAL: You MUST read CRITICAL_RULES.md first in every session. This contains the rule about NO GitHub pushes without user approval.**
