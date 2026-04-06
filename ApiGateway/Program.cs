@@ -48,16 +48,13 @@ app.UseAuthorization();
 // Standard Swashbuckle Swagger middleware
 app.UseSwagger();
 
-// v8.1.1 pattern: UseSwaggerForOcelot() for aggregation
-app.UseSwaggerForOcelot(builder.Configuration);
-
-// SwaggerForOcelotUI with v8.1.1 configuration
+// v8.1.1 pattern: UseSwaggerForOcelotUI handles both UI and aggregation
 app.UseSwaggerForOcelotUI(opt =>
 {
     opt.PathToSwaggerGenerator = "/swagger/docs";
 });
 
-// Ocelot gateway must execute after SwaggerForOcelot
+// Ocelot gateway must execute after Swagger UI
 await app.UseOcelot();
 
 app.Run();
