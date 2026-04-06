@@ -16,7 +16,14 @@ builder.Services.AddHttpClient("AuthService", client =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "UserService API",
+        Version = "v1"
+    });
+});
 
 var app = builder.Build();
 
