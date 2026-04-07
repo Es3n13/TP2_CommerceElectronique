@@ -90,9 +90,9 @@ A production-ready e-commerce microservices platform built with ASP.NET Core, fe
       ┌───────────────┼───────────────┐
       │               │               │
 ┌─────▼─────┐   ┌─────▼─────┐   ┌─────▼─────┐
-│  UserService    │  Resources   │ Reservations
-│  (Port 5000)    │  (Port 5001) │  (Port 5002)
-│  JWT Auth ✅    │  JWT Auth ✅ │  JWT Auth ✅
+│  UserServic   │  Resources    │ Reservations
+│  (Port 5000)  │  (Port 5001)  │  (Port 5002)
+│  JWT Auth ✅  │  JWT Auth ✅ │  JWT Auth ✅
 └─────┬─────┘   └─────┬─────┘   └─────┬─────┘
       │               │               │
       └───────────────┼───────────────┘
