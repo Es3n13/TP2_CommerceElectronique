@@ -36,14 +36,28 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddAuthorization();
 builder.Services.AddOcelot(builder.Configuration);
 builder.Services.AddSwaggerForOcelot(builder.Configuration);
 
 var app = builder.Build();
 
-app.UseAuthentication();
-app.UseAuthorization();
+// Note: REMOVED app.UseAuthentication() and app.UseAuthorization()
+// because Ocelot handles authentication per-route via ocelot.json
+// Global auth middleware would block public routes like /login and /register
+
+// Enable CORS for all requests (allows Swagger UI to call gateway)
+app.UseCors("CorsPolicy");
 
 app.UseSwaggerForOcelotUI(opt =>
 {

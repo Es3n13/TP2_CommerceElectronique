@@ -1,7 +1,7 @@
 {
   "Routes": [
     {
-      "DownstreamPathTemplate": "/api/users/{everything}",
+      "DownstreamPathTemplate": "/api/users/register",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
