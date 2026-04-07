@@ -47,7 +47,6 @@ if (app.Environment.IsDevelopment())
     context.Database.EnsureCreated();
 }
 
-app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
