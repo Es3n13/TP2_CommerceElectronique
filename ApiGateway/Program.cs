@@ -52,12 +52,12 @@ builder.Services.AddSwaggerForOcelot(builder.Configuration);
 
 var app = builder.Build();
 
-// Note: REMOVED app.UseAuthentication() and app.UseAuthorization()
-// because Ocelot handles authentication per-route via ocelot.json
-// Global auth middleware would block public routes like /login and /register
-
-// Enable CORS for all requests (allows Swagger UI to call gateway)
+// Enable CORS FIRST (must run before authentication and routing)
 app.UseCors("CorsPolicy");
+
+// Note: NOT using app.UseAuthentication() or app.UseAuthorization()
+// because Ocelot handles authentication per-route via ocelot.json
+// Global auth middleware would block all requests including public routes
 
 app.UseSwaggerForOcelotUI(opt =>
 {
