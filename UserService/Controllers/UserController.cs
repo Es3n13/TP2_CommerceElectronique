@@ -211,6 +211,102 @@ namespace UserService.Controllers
 			return NoContent();
 		}
 
+		// POST /api/users/change-password - Change user password
+		[HttpPost("change-password")]
+		public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+		{
+			try
+			{
+				// Validate request
+				if (request.UserId <= 0)
+				{
+					return BadRequest(new ChangePasswordResponse
+					{
+						Success = false,
+						Message = "Valid user ID is required."
+					});
+				}
+
+				if (string.IsNullOrEmpty(request.OldPassword) || string.IsNullOrEmpty(request.NewPassword))
+				{
+					return BadRequest(new ChangePasswordResponse
+					{
+						Success = false,
+						Message = "Old password and new password are required."
+					});
+				}
+
+				if (request.OldPassword == request.NewPassword)
+				{
+					return BadRequest(new ChangePasswordResponse
+					{
+						Success = false,
+						Message = "New password must be different from old password."
+					});
+				}
+
+				// Find user
+				var user = await _context.Users.FindAsync(request.UserId);
+				if (user == null)
+				{
+					return NotFound(new ChangePasswordResponse
+					{
+						Success = false,
+						Message = "User not found."
+					});
+				}
+
+				// Verify old password
+				if (!VerifyPassword(request.OldPassword, user.PasswordHash))
+				{
+					return Unauthorized(new ChangePasswordResponse
+					{
+						Success = false,
+						Message = "Invalid old password."
+					});
+				}
+
+				// Update password
+				user.PasswordHash = HashPassword(request.NewPassword);
+				_context.Users.Update(user);
+				await _context.SaveChangesAsync();
+
+				// Revoke all user tokens in AuthService (security best practice)
+				try
+				{
+					// Call AuthService to revoke all tokens for this user
+					var revokeResponse = await _authServiceClient.PostAsync($"api/tokenrevocation/revoke-all/{user.Id}", null);
+
+					if (!revokeResponse.IsSuccessStatusCode)
+					{
+						Console.WriteLine($"Warning: Failed to revoke tokens for user {user.Id}. Status: {revokeResponse.StatusCode}");
+					}
+				}
+				catch (Exception revocationEx)
+				{
+					// Log but don't fail the password change if token revocation fails
+					// The user can still login with the new password
+					Console.WriteLine($"Warning: Failed to revoke tokens for user {user.Id}: {revocationEx.Message}");
+				}
+
+				return Ok(new ChangePasswordResponse
+				{
+					Success = true,
+					Message = "Password changed successfully. All sessions have been terminated."
+				});
+			}
+			catch (Exception ex)
+			{
+				// Log the error
+				Console.WriteLine($"Error changing password for user {request.UserId}: {ex.Message}");
+				return StatusCode(500, new ChangePasswordResponse
+				{
+					Success = false,
+					Message = "An error occurred while changing the password."
+				});
+			}
+		}
+
         // Hash de mot de passe simple
         private string HashPassword(string password)
 		{
@@ -232,6 +328,19 @@ namespace UserService.Controllers
 		public string? Email { get; set; }
 		public string? PhoneNumber { get; set; }
 		public string? Role { get; set; }
+	}
+
+	public class ChangePasswordRequest
+	{
+		public int UserId { get; set; }
+		public string OldPassword { get; set; } = string.Empty;
+		public string NewPassword { get; set; } = string.Empty;
+	}
+
+	public class ChangePasswordResponse
+	{
+		public bool Success { get; set; }
+		public string Message { get; set; } = string.Empty;
 	}
 
     // DTO pour la réponse du token JWT

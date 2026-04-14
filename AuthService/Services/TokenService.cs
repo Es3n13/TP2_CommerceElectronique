@@ -152,5 +152,35 @@ namespace AuthService.Services
                 return null;
             }
         }
+
+        public string? ExtractTokenJti(string token)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+
+                return jwtToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to extract JTI from token", ex);
+            }
+        }
+
+        public DateTime? ExtractTokenExpiration(string token)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+
+                return jwtToken.ValidTo;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to extract expiration from token", ex);
+            }
+        }
     }
 }

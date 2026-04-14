@@ -7,6 +7,7 @@ namespace AuthService.Data
         public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options) { }
 
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<RevokedAccessToken> RevokedAccessTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -25,6 +26,18 @@ namespace AuthService.Data
             modelBuilder.Entity<RefreshToken>()
                 .HasIndex(rt => rt.JwtId)
                 .HasDatabaseName("IX_RefreshTokens_JwtId");
+
+            modelBuilder.Entity<RevokedAccessToken>()
+                .ToTable("RevokedAccessTokens", schema: "dbo")
+                .HasKey(rt => rt.Id);
+
+            modelBuilder.Entity<RevokedAccessToken>()
+                .HasIndex(rt => rt.TokenJti)
+                .HasDatabaseName("IX_RevokedAccessTokens_TokenJti");
+
+            modelBuilder.Entity<RevokedAccessToken>()
+                .HasIndex(rt => rt.UserId)
+                .HasDatabaseName("IX_RevokedAccessTokens_UserId");
         }
     }
 

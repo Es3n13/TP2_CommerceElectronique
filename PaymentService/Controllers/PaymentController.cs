@@ -4,6 +4,7 @@ using PaymentService.Services;
 using PaymentService.Models;
 using PaymentService.Data;
 using Stripe;
+using System.Net.Http.Json;
 
 namespace PaymentService.Controllers
 {
@@ -13,14 +14,16 @@ namespace PaymentService.Controllers
 	{
 		private readonly StripeService _stripeService;
 		private readonly PaymentDbContext _context;
+		private readonly IHttpClientFactory _httpClientFactory;
 
-		public PaymentController(StripeService stripeService, PaymentDbContext context)
+		public PaymentController(StripeService stripeService, PaymentDbContext context, IHttpClientFactory httpClientFactory)
 		{
 			_stripeService = stripeService;
 			_context = context;
+			_httpClientFactory = httpClientFactory;
 		}
 
-		// POST /api/payments/create - Créer un payment intent
+		// POST /api/payments/create - CrÃ©er un payment intent
 		[HttpPost("create")]
 		public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentRequest request)
 		{
@@ -43,7 +46,7 @@ namespace PaymentService.Controllers
 					request.PaymentMethodId
 				);
 
-                // Si le paiement a été confirmé immédiatement mettre à jour le statut de la réservation
+                // Si le paiement a Ã©tÃ© confirmÃ© immÃ©diatement mettre Ã  jour le statut de la rÃ©servation
                 if (!string.IsNullOrEmpty(request.PaymentMethodId) && paymentIntent.Status == "succeeded")
 				{
 					await _stripeService.UpdateReservationStatusAsync(request.ReservationId, "Confirmed");
@@ -69,7 +72,7 @@ namespace PaymentService.Controllers
 			}
 		}
 
-		// GET /api/payments/{id} - Get les détails du paiement
+		// GET /api/payments/{id} - Get les dÃ©tails du paiement
 		[HttpGet("{id}")]
 		public async Task<IActionResult> GetPayment(int id)
 		{
@@ -134,17 +137,34 @@ namespace PaymentService.Controllers
 			{
 				var paymentIntent = await _stripeService.ConfirmPaymentIntentAsync(payment.StripePaymentIntentId);
 
-                // Mettre à jour le paiement dans la base de données
+                // Mettre Ã  jour le paiement dans la base de donnÃ©es
                 await _stripeService.UpdatePaymentStatusAsync(
 					payment.Id,
 					paymentIntent.Status,
 					paymentIntent.Status == "requires_payment_method" ? null : paymentIntent.LastPaymentError?.Message
 				);
 
-                // Mettre à jour le statut de la réservation si le paiement a réussi
+                // Mettre Ã  jour le statut de la rÃ©servation si le paiement a rÃ©ussi
                 if (paymentIntent.Status == "succeeded")
 				{
 					await _stripeService.UpdateReservationStatusAsync(payment.ReservationId, "Confirmed");
+
+                    // Fast and Dirty Notification call
+                    try 
+                    {
+                        var client = _httpClientFactory.CreateClient();
+                        await client.PostAsJsonAsync("http://localhost:5005/notify", new 
+                        { 
+                            UserId = $"User_{payment.ReservationId}", // Placeholder for actual user ID
+                            Message = $"Your reservation {payment.ReservationId} has been confirmed! Payment successful.",
+                            Type = "Email"
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log warning but don't fail the payment confirmation
+                        Console.WriteLine($"[WARNING] Notification Service unavailable: {ex.Message}");
+                    }
 				}
 
 				return Ok(new
