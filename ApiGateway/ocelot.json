@@ -1,43 +1,166 @@
 {
   "Routes": [
     {
-      "DownstreamPathTemplate": "/api/users",
+      "DownstreamPathTemplate": "/api/users/register",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5140
+          "Port": 5000
         }
       ],
-      "UpstreamPathTemplate": "/api/users",
-      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ]
+      "UpstreamPathTemplate": "/api/users/register",
+      "UpstreamHttpMethod": [ "Post" ],
+      "SwaggerKey": "users"
     },
     {
-      "DownstreamPathTemplate": "/api/auth/{everything}",
+      "DownstreamPathTemplate": "/api/users/login",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 6000
+          "Port": 5000
+        }
+      ],
+      "UpstreamPathTemplate": "/api/users/login",
+      "UpstreamHttpMethod": [ "Post" ],
+      "SwaggerKey": "users"
+    },
+    {
+      "DownstreamPathTemplate": "/api/users/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5000
+        }
+      ],
+      "UpstreamPathTemplate": "/api/users/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Put", "Delete" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "SwaggerKey": "users"
+    },
+    {
+      "DownstreamPathTemplate": "/api/resources/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/resources/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "SwaggerKey": "resources"
+    },
+    {
+      "DownstreamPathTemplate": "/api/reservations/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "UpstreamPathTemplate": "/api/reservations/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "SwaggerKey": "reservations"
+    },
+    {
+      "DownstreamPathTemplate": "/api/payments/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "UpstreamPathTemplate": "/api/payments/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "SwaggerKey": "payments"
+    },
+    {
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 6001
         }
       ],
       "UpstreamPathTemplate": "/api/auth/{everything}",
-      "UpstreamHttpMethod": [ "Get", "Post" ]
-    },
-    {
-      "DownstreamPathTemplate": "/api/users/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5140
-        }
-      ],
-      "UpstreamPathTemplate": "/api/users/{id}",
-      "UpstreamHttpMethod": [ "Get", "Put", "Delete" ]
+      "UpstreamHttpMethod": [ "Get", "Post" ],
+      "SwaggerKey": "auth"
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "https://localhost:7139"
-  }
+    "BaseUrl": "http://localhost:8080"
+  },
+  "SwaggerEndPoints": [
+    {
+      "Key": "users",
+      "Config": [
+        {
+          "Name": "UserService API",
+          "Version": "v1",
+          "Url": "http://localhost:5000/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "resources",
+      "Config": [
+        {
+          "Name": "ResourcesService API",
+          "Version": "v1",
+          "Url": "http://localhost:5001/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "reservations",
+      "Config": [
+        {
+          "Name": "ReservationsService API",
+          "Version": "v1",
+          "Url": "http://localhost:5002/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "payments",
+      "Config": [
+        {
+          "Name": "PaymentService API",
+          "Version": "v1",
+          "Url": "http://localhost:5003/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "auth",
+      "Config": [
+        {
+          "Name": "AuthService API",
+          "Version": "v1",
+          "Url": "http://localhost:6001/swagger/v1/swagger.json"
+        }
+      ]
+    }
+  ]
 }

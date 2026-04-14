@@ -12,12 +12,17 @@ var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["SecretKey"]!
     ?? throw new InvalidOperationException("JWT SecretKey is not configured.");
 
+// Register HttpClient
 builder.Services.AddHttpClient();
+
+// Register Database Context
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("AuthDbConnection")
     )
 );
+
+// Register Services
 builder.Services.AddScoped<TokenService>();
 
 builder.Services.AddAuthentication(options =>
@@ -38,14 +43,24 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
         ClockSkew = TimeSpan.Zero
     };
-});
+
+    // Inject custom events for revocation checking
+    });
 
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
+
+// Register Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "AuthService API",
+        Version = "v1"
+    });
+
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -70,7 +85,6 @@ if (app.Environment.IsDevelopment())
 	app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
