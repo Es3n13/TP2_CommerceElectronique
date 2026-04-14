@@ -647,6 +647,4 @@ For issues or questions:
 
 ---
 
-**Last Updated:** April 7, 2026  
-**Version:** V.Alpha  
-**Status:** Development (95% Complete) ✅
+*Pour plus de détails, voir le fichier mémoire: `/memory/2026-04-01.md`*
