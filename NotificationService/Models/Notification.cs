@@ -5,8 +5,8 @@
 
     public class Notification
     {
-        public Guid Id { get; set; }
-        public Guid UserId { get; set; }
+        public int Id { get; set; }
+        public int UserId { get; set; }
         public string Content { get; set; } = string.Empty;
         public NotificationChannel Channel { get; set; }
         public NotificationStatus Status { get; set; }

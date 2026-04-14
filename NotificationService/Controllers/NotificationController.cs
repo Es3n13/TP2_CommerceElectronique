@@ -2,6 +2,8 @@
 using NotificationService.Models;
 using NotificationService.Services;
 using System;
+using System.Threading.Tasks;
+
 namespace NotificationService.Controllers;
 
 [ApiController]
@@ -16,29 +18,42 @@ public class NotificationController : ControllerBase
         _dispatcher = dispatcher;
         _logger = logger;
     }
-    [HttpPost]
+
+    // POST: api/notification/send
+    [HttpPost("send")]
     public async Task<IActionResult> SendNotification([FromBody] NotificationRequest request)
     {
+        if (request == null) return BadRequest("Request body cannot be null.");
+
         _logger.LogInformation("Received notification request for User: {UserId}", request.UserId);
 
-        // 1. Map Request to Entity
         var notification = new NotificationService.Models.Notification
         {
-            Id = Guid.NewGuid(),
             UserId = request.UserId,
             Content = request.Content,
             Channel = request.Channel,
             Status = NotificationStatus.Pending
         };
-        // 2. Dispatch (This calls your existing NotificationDispatcher)
-        await _dispatcher.DispatchAsync(notification);
 
-        // 3. Return the result
+        await _dispatcher.DispatchAsync(notification);
         return Ok(new
         {
             NotificationId = notification.Id,
             Status = notification.Status.ToString(),
-            Message = "Notification processed."
+            Message = "Notification queued for delivery."
+        });
+    }
+
+    // GET: api/notification/status/{id}
+    [HttpGet("status/{id}")]
+    public IActionResult GetStatus(Guid id)
+    {
+
+        return Ok(new
+        {
+            NotificationId = id,
+            Status = "Processed (Mock)",
+            Timestamp = DateTime.UtcNow
         });
     }
 }

@@ -1,6 +1,5 @@
 using NotificationService.Interface;
 using NotificationService.Models;
-using NotificationService.Service;
 using NotificationService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,8 +10,6 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-var app = builder.Build();
-
 // Register the Dispatcher
 builder.Services.AddScoped<NotificationDispatcher>();
 
@@ -22,6 +19,10 @@ builder.Services.AddSingleton<INotificationProvider>(sp =>
 
 builder.Services.AddSingleton<INotificationProvider>(sp =>
     new MockNotificationProvider(NotificationChannel.Sms, sp.GetRequiredService<ILogger<MockNotificationProvider>>()));
+
+var app = builder.Build();
+
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

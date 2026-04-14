@@ -2,7 +2,7 @@
 using NotificationService.Interface;
 using NotificationService.Models;
 
-namespace NotificationService.Service;
+namespace NotificationService.Services;
 
 public class MockNotificationProvider : INotificationProvider
 {
