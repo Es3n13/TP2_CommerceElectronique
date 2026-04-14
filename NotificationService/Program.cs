@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using NotificationService.Interface;
 using NotificationService.Models;
 using NotificationService.Services;
@@ -19,6 +20,9 @@ builder.Services.AddSingleton<INotificationProvider>(sp =>
 
 builder.Services.AddSingleton<INotificationProvider>(sp =>
     new MockNotificationProvider(NotificationChannel.Sms, sp.GetRequiredService<ILogger<MockNotificationProvider>>()));
+
+builder.Services.AddDbContext<NotificationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 

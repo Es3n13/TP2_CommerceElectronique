@@ -1,12 +1,20 @@
-﻿namespace NotificationService.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace NotificationService.Models
 {
     public enum NotificationChannel { Email, Sms }
     public enum NotificationStatus { Pending, Sent, Failed }
 
     public class Notification
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+
         public int Id { get; set; }
+        [Required]
         public int UserId { get; set; }
+        [Required]
         public string Content { get; set; } = string.Empty;
         public NotificationChannel Channel { get; set; }
         public NotificationStatus Status { get; set; }
