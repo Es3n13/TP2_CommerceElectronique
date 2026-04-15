@@ -1,46 +1,46 @@
-# TP2 Commerce Électronique - E-Commerce Microservices Platform
+# TP2 Commerce Électronique - Plateforme de Microservices E-Commerce
 
-**Course:** INF27523 - Technologies du commerce électronique  
-**Semester:** Hiver 2026  
-**Institution:** UQAR (Université du Québec à Rimouski)  
-**Repository:** `Es3n13/TP2_CommerceElectronique`  
-**Branch:** `V.Beta` (Stable/On Ice) | `V.Alpha` (Development) | `main` (Baseline)
-
----
-
-## 🎯 Project Overview
-
-A production-ready, **headless** e-commerce microservices platform built with ASP.NET Core. This project implements a backend-only architecture (Web APIs) designed to be consumed by external frontends or integrated via an API Gateway.
-
-**Current Status:** ❄️ **ON ICE** (Stabilized and finalized for current phase).
-
-**Key Features:**
-- ✅ 6 fully functional microservices
-- ✅ JWT-based authentication across all services
-- ✅ Ocelot API Gateway with unified authentication
-- ✅ Stripe payment integration
-- ✅ Enhanced Swagger UI with security (Authorize padlock)
-- ✅ Complete service communication mesh
-- ✅ SQL Server databases per service
-- ✅ Swagger aggregation with MMLib.SwaggerForOcelot
-- ✅ CORS configuration resolved
-- ✅ Standardized .NET 10.0 across all services
+**Cours :** INF27523 - Technologies du commerce électronique  
+**Trimestre :** Hiver 2026  
+**Institution :** UQAR (Université du Québec à Rimouski)  
+**Dépôt :** `Es3n13/TP2_CommerceElectronique`  
+**Branche :** `V.Beta` (Stable/En pause) | `V.Alpha` (Développement) | `main` (Base)
 
 ---
 
-## 🔥 Recent Updates (April 15, 2026)
+## 🎯 Aperçu du Projet
 
-### 🔧 Final Stabilizations
-1. **Headless Architecture Verification ✅**
-   - Confirmed the system as a pure Web API suite.
-   - No frontend implementation; all interactions are via SwaggerUI or API calls.
-2. **Notification Service Integration ✅**
-   - Successfully implemented and verified the `NotificationService`.
-   - Services now have the capability to send notifications (verified working).
-3. **UserService Stability ✅**
-   - Final verification of `UserService` stability and integration with Auth flow.
-4. **Project Status: On Ice ❄️**
-   - Project is now in a stabilized state, with all core and bonus features for the current phase implemented and verified.
+Une plateforme de microservices e-commerce **headless** prête pour la production, construite avec ASP.NET Core. Ce projet implémente une architecture backend uniquement (Web APIs) conçue pour être consommée par des frontends externes ou intégrée via une passerelle d'API (API Gateway).
+
+**État actuel :** ❄️ **EN PAUSE** (Stabilisée et finalisée pour la phase actuelle).
+
+**Caractéristiques principales :**
+- ✅ 6 microservices pleinement fonctionnels
+- ✅ Authentification basée sur JWT pour tous les services
+- ✅ Passerelle API Ocelot avec authentification unifiée
+- ✅ Intégration des paiements Stripe
+- ✅ Interface Swagger améliorée avec sécurité (cadenas d'autorisation)
+- ✅ Maillage de communication complet entre les services
+- ✅ Bases de données SQL Server par service
+- ✅ Agrégation Swagger avec MMLib.SwaggerForOcelot
+- ✅ Configuration CORS résolue
+- ✅ Standardisation sur .NET 10.0 pour tous les services
+
+---
+
+## 🔥 Mises à jour récentes (15 avril 2026)
+
+### 🔧 Stabilisations Finales
+1. **Vérification de l'architecture Headless ✅**
+   - Confirmation du système comme une suite pure de Web API.
+   - Aucune implémentation frontend ; toutes les interactions se font via SwaggerUI ou des appels API.
+2. **Intégration du service de notification ✅**
+   - Implémentation et vérification réussies du `NotificationService`.
+   - Les services ont désormais la capacité d'envoyer des notifications (vérifié et fonctionnel).
+3. **Stabilité du UserService ✅**
+   - Vérification finale de la stabilité du `UserService` et de son intégration avec le flux d'authentification.
+4. **État du projet : En pause ❄️**
+   - Le projet est maintenant dans un état stabilisé, avec toutes les fonctionnalités de base et bonus pour la phase actuelle implémentées et vérifiées.
 
 ---
 
@@ -48,95 +48,95 @@ A production-ready, **headless** e-commerce microservices platform built with AS
 
 ### Microservices
 
-| Service | Database | Port | Purpose | JWT Auth |
-|---------|----------|------|---------|----------|
-| **AuthService** | AuthDb | 6001 | JWT token generation & validation | ✅ Yes |
-| **UserService** | UserDb | 5000 | User management & authentication | ✅ Yes |
-| **ResourcesService** | ResourceDb | 5001 | Products/resources management | ✅ Yes |
-| **ReservationsService** | ReservationDb | 5002 | Booking/order management | ✅ Yes |
-| **PaymentService** | PaymentDb | 5003 | Payment processing (Stripe) | ✅ Yes |
-| **NotificationService**| - | Variable | System notifications (Bonus) | ✅ Yes |
-| **ApiGateway** | - | 8080 | Unified API entry point + JWT auth | ✅ Yes |
+| Service | Base de données | Port | Rôle | Auth JWT |
+|---------|----------------|------|---------|----------|
+| **AuthService** | AuthDb | 6001 | Génération et validation de jetons JWT | ✅ Oui |
+| **UserService** | UserDb | 5000 | Gestion des utilisateurs et authentification | ✅ Oui |
+| **ResourcesService** | ResourceDb | 5001 | Gestion des produits/ressources | ✅ Oui |
+| **ReservationsService** | ReservationDb | 5002 | Gestion des réservations/commandes | ✅ Oui |
+| **PaymentService** | PaymentDb | 5003 | Traitement des paiements (Stripe) | ✅ Oui |
+| **NotificationService**| - | Variable | Notifications système (Bonus) | ✅ Oui |
+| **ApiGateway** | - | 8080 | Point d'entrée API unifié + auth JWT | ✅ Oui |
 
-### Technology Stack
+### Pile Technologique
 
-- **Framework:** .NET 10.0 (all services standardized)
-- **Language:** C#
-- **Databases:** SQL Server (one per service)
-- **ORM:** Entity Framework Core
-- **Authentication:** JWT (HS256)
-- **API Gateway:** Ocelot 24.1.0
-- **Payment:** Stripe.net v47.3.0
-- **API Documentation:** Swashbuckle.AspNetCore v10.1.7
-- **Swagger Aggregation:** MMLib.SwaggerForOcelot v10.0.0
-- **OpenAPI:** Microsoft.OpenApi v2.4.1
+- **Framework :** .NET 10.0 (standardisé pour tous les services)
+- **Langage :** C#
+- **Bases de données :** SQL Server (une par service)
+- **ORM :** Entity Framework Core
+- **Authentification :** JWT (HS256)
+- **Passerelle API :** Ocelot 24.1.0
+- **Paiement :** Stripe.net v47.3.0
+- **Documentation API :** Swashbuckle.AspNetCore v10.1.7
+- **Agrégation Swagger :** MMLib.SwaggerForOcelot v10.0.0
+- **OpenAPI :** Microsoft.OpenApi v2.4.1
 
-### Security Layers
+### Couches de Sécurité
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Ocelot API Gateway                        │
-│  Port: 8080 | JWT Validation | CORS Configuration           │
+│                    Passerelle API Ocelot                    │
+│  Port : 8080 | Validation JWT | Configuration CORS          │
 └─────────────────────┬───────────────────────────────────────┘
                       │
       ┌───────────────┼───────────────┐
       │               │               │
 ┌─────▼─────┐   ┌─────▼─────┐   ┌─────▼─────┐
-│  UserService  │  Resources    │ Reservations
+│ UserService  │  Resources    │ Reservations
 │  (Port 5000)  │  (Port 5001)  │  (Port 5002)
-│  JWT Auth ✅  │  JWT Auth ✅ │  JWT Auth ✅
+│  Auth JWT ✅  │  Auth JWT ✅ │  Auth JWT ✅
 └─────┬─────┘   └─────┬─────┘   └─────┬─────┘
       │               │               │
       └───────────────┼───────────────┘
                       │
       ┌───────────────▼───────────────┐
       │  AuthService (Port 6001)      │
-      │  JWT Token Issuer ✅          │
+      │  Émetteur de jetons JWT ✅     │
       └───────────────────────────────┘
                       │
       ┌───────────────▼───────────────┐
       │  PaymentService (Port 5003)   │
-      │  Stripe Integration ✅        │
-      │  JWT Auth ✅                  │
+      │  Intégration Stripe ✅        │
+      │  Auth JWT ✅                  │
       └───────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Démarrage Rapide
 
-### Prerequisites
+### Prérequis
 
-- .NET 10.0 SDK
-- SQL Server (or SQL Express)
-- Node.js (for OpenClaw if applicable)
+- SDK .NET 10.0
+- SQL Server (ou SQL Express)
+- Node.js (pour OpenClaw si applicable)
 
 ### Installation
 
-1. **Clone the repository:**
+1. **Cloner le dépôt :**
    ```bash
    git clone https://github.com/Es3n13/TP2_CommerceElectronique.git
    cd TP2_CommerceElectronique
    git checkout V.Beta
    ```
 
-2. **Restore dependencies:**
+2. **Restaurer les dépendances :**
    ```bash
    dotnet restore
    ```
 
-3. **Configure databases:**
-   - Update connection strings in `appsettings.json` for each service
-   - Default: `(localdb)\\mssqllocaldb`
+3. **Configurer les bases de données :**
+   - Mettre à jour les chaînes de connexion dans `appsettings.json` pour chaque service
+   - Par défaut : `(localdb)\\mssqllocaldb`
 
-4. **Build the solution:**
+4. **Compiler la solution :**
    ```bash
    dotnet build
    ```
 
-### Running Services
+### Exécution des Services
 
-**Option 1: Manual (7 terminals):**
+**Option 1 : Manuelle (7 terminaux) :**
 ```bash
 # Terminal 1 - Auth Service (Port 6001)
 cd AuthService && dotnet run
@@ -162,72 +162,72 @@ cd ApiGateway && dotnet run
 
 ---
 
-## 📡 Access Points
+## 📡 Points d'Accès
 
-### Gateway (Unified Entry Point)
-- **Base URL:** `http://localhost:8080`
-- **Swagger UI:** `http://localhost:8080/swagger`
-- **Aggregated Swagger:** `http://localhost:8080/swagger/docs`
-
----
-
-## 🔐 Authentication
-
-### JWT Flow
-
-1. **Register:** `POST /api/users/register`
-2. **Login:** `POST /api/users/login` $\rightarrow$ Get Token
-3. **Access:** Use `Authorization: Bearer {token}` header
+### Passerelle (Point d'entrée unifié)
+- **URL de base :** `http://localhost:8080`
+- **Swagger UI :** `http://localhost:8080/swagger`
+- **Swagger agrégé :** `http://localhost:8080/swagger/docs`
 
 ---
 
-## 🔒 Swagger UI Authorization Guide
+## 🔐 Authentification
 
-### Using the Authorize Padlock
+### Flux JWT
 
-1. **Get Token** via `/api/users/login`
-2. **Click 🔒 Authorize** in any Swagger UI
-3. **Enter:** `Bearer eyJhbGci... `
-4. **Test** protected endpoints.
-
----
-
-## 🔃 JWT Token Revocation ✅
-
-The platform includes a comprehensive JWT token revocation system using Redis for immediate invalidation.
-
-**API Endpoints:**
-- `POST /api/TokenRevocation/revoke` - Single token
-- `GET /api/TokenRevocation/check/{tokenJti}` - Status check
-- `POST /api/TokenRevocation/revoke-all/{userId}` - All user tokens
-- `POST /api/TokenRevocation/cleanup` - Purge expired
+1. **S'enregistrer :** `POST /api/users/register`
+2. **Se connecter :** `POST /api/users/login` $\rightarrow$ Obtenir le jeton
+3. **Accès :** Utiliser l'en-tête `Authorization: Bearer {token}`
 
 ---
 
-## 💳 Payment Integration
+## 🔒 Guide d'autorisation Swagger UI
 
-### Stripe Implementation
-- **Create Payment Intent:** `POST /api/payments/create`
-- **Returns:** `paymentIntentId` and `clientSecret` for frontend integration.
+### Utilisation du cadenas "Authorize"
 
----
-
-## 🔄 Service Communication
-
-- **Direct HTTP client calls** for internal communication.
-- **Service-to-service** trust (no internal auth required).
-- **API Gateway** handles all external JWT validation.
+1. **Obtenir le jeton** via `/api/users/login`
+2. **Cliquer sur 🔒 Authorize** dans n'importe quelle interface Swagger UI
+3. **Saisir :** `Bearer eyJhbGci... `
+4. **Tester** les points de terminaison protégés.
 
 ---
 
-## 📊 API Documentation
+## 🔃 Révocation des jetons JWT ✅
 
-- **Gateway Aggregated Swagger:** `http://localhost:8080/swagger`
-- **Individual Service Swaggers:** Accessible at `/swagger` for each service port.
+La plateforme inclut un système complet de révocation de jetons JWT utilisant Redis pour une invalidation immédiate.
+
+**Points de terminaison API :**
+- `POST /api/TokenRevocation/revoke` - Jeton unique
+- `GET /api/TokenRevocation/check/{tokenJti}` - Vérification du statut
+- `POST /api/TokenRevocation/revoke-all/{userId}` - Tous les jetons d'un utilisateur
+- `POST /api/TokenRevocation/cleanup` - Purge des jetons expirés
 
 ---
 
-## 🧪 Testing
+## 💳 Intégration des Paiements
+
+### Implémentation Stripe
+- **Créer une intention de paiement :** `POST /api/payments/create`
+- **Retourne :** `paymentIntentId` et `clientSecret` pour l'intégration frontend.
+
+---
+
+## 🔄 Communication entre Services
+
+- **Appels client HTTP directs** pour la communication interne.
+- **Confiance service-à-service** (aucune authentification interne requise).
+- **La passerelle API** gère toute la validation JWT externe.
+
+---
+
+## 📊 Documentation de l'API
+
+- **Swagger agrégé de la passerelle :** `http://localhost:8080/swagger`
+- **Swaggers individuels des services :** Accessibles via `/swagger` sur le port de chaque service.
+
+---
+
+## 🧪 Tests
 
 ```bash
 dotnet test
@@ -235,71 +235,71 @@ dotnet test
 
 ---
 
-## 📁 Project Structure
+## 📁 Structure du Projet
 
 ```
 TP2_CommerceElectronique/
-├── AuthService/              # JWT authentication service
-├── UserService/              # User management
-├── ResourcesService/         # Products/resources
-├── ReservationsService/      # Bookings/orders
-├── PaymentService/           # Payment processing
-├── NotificationService/      # System notifications (Bonus)
-├── ApiGateway/               # Ocelot gateway
+├── AuthService/              # Service d'authentification JWT
+├── UserService/              # Gestion des utilisateurs
+├── ResourcesService/         # Produits/ressources
+├── ReservationsService/      # Réservations/commandes
+├── PaymentService/           # Traitement des paiements
+├── NotificationService/      # Notifications système (Bonus)
+├── ApiGateway/               # Passerelle Ocelot
 └── TP2_CommerceElectronique.sln
 ```
 
 ---
 
-## 📈 Progress
+## 📈 Progrès
 
-### Phase 1: Core MVP ✅ COMPLETE
-- [x] EF Core integration for all services
-- [x] JWT authentication with refresh tokens
-- [x] Payment service with Stripe
-- [x] All CRUD operations
-- [x] Service communication mesh
+### Phase 1 : MVP de base ✅ TERMINÉ
+- [x] Intégration EF Core pour tous les services
+- [x] Authentification JWT avec jetons de rafraîchissement
+- [x] Service de paiement avec Stripe
+- [x] Toutes les opérations CRUD
+- [x] Maillage de communication entre services
 
-### Phase 2: Integration ✅ COMPLETE
-- [x] Ocelot API gateway
-- [x] Gateway-level JWT authentication
-- [x] Service-to-service communication
-- [x] Swagger aggregation (MMLib.SwaggerForOcelot)
-- [x] CORS configuration resolved
-- [x] Swagger security definitions (Authorize padlock)
-- [x] Framework standardization (.NET 10.0)
-- [x] Bonus: Notification service implemented and verified
+### Phase 2 : Intégration ✅ TERMINÉ
+- [x] Passerelle API Ocelot
+- [x] Authentification JWT au niveau de la passerelle
+- [x] Communication service-à-service
+- [x] Agrégation Swagger (MMLib.SwaggerForOcelot)
+- [x] Configuration CORS résolue
+- [x] Définitions de sécurité Swagger (cadenas d'autorisation)
+- [x] Standardisation du framework (.NET 10.0)
+- [x] Bonus : Service de notification implémenté et vérifié
 
-### Phase 3: Deployment ⏳ NOT STARTED
-- [ ] Azure deployment
-- [ ] Production configuration
+### Phase 3 : Déploiement ⏳ NON COMMENCÉ
+- [ ] Déploiement Azure
+- [ ] Configuration de production
 
 ---
 
-## 🐛 Known Issues
+## 🐛 Problèmes Connus
 
-**✅ RESOLVED - CORS Issues**
-- Fixed: Removed HTTPS redirection, updated CORS configuration.
+**✅ RÉSOLU - Problèmes de CORS**
+- Corrigé : Suppression de la redirection HTTPS, mise à jour de la configuration CORS.
 
-**✅ RESOLVED - Swagger Authorization**
-- Fixed: Added "Authorize" padlock to all services.
+**✅ RÉSOLU - Autorisation Swagger**
+- Corrigé : Ajout du cadenas "Authorize" à tous les services.
 
 ---
 
 ## 🛠️ Configuration
 
-- **.NET Framework:** 10.0
-- **Connection Strings:** SQL Server `(localdb)\mssqllocaldb`
-- **Payment:** Stripe.net v47.3.0
+- **Framework .NET :** 10.0
+- **Chaînes de connexion :** SQL Server `(localdb)\mssqllocaldb`
+- **Paiement :** Stripe.net v47.3.0
 
 ---
 
-## 👥 Authors
+## 👥 Auteurs
 
 - **Snoop Frogg** (@snoopfrogg7085)
-- Course: INF27523 - Technologies du commerce électronique
-- Semester: Hiver 2026
+- Cours : INF27523 - Technologies du commerce électronique
+- Trimestre : Hiver 2026
 
 ---
 
-*Last Updated: April 15, 2026 | Project Status: ❄️ On Ice*
+*Dernière mise à jour : 15 avril 2026 | État du projet : ❄️ En pause*
