@@ -40,13 +40,13 @@ public class NotificationController : ControllerBase
         {
             NotificationId = notification.Id,
             Status = notification.Status.ToString(),
-            Message = "Notification queued for delivery."
+            Message = "Notification sent for delivery."
         });
     }
 
     // GET: api/notification/status/{id}
     [HttpGet("status/{id}")]
-    public IActionResult GetStatus(Guid id)
+    public IActionResult GetStatus(int id)
     {
 
         return Ok(new
