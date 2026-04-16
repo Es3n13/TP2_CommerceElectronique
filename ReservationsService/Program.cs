@@ -55,8 +55,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Register NotificationClient implementation as Transient
-builder.Services.AddTransient<INotificationClient, NotificationClient>();
+builder.Services.AddScoped<INotificationClient, NotificationClient>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

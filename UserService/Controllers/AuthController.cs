@@ -48,19 +48,19 @@ namespace UserService.Controllers
 		public async Task<IActionResult> Register([FromBody] AuthRegisterRequest request)
 		{
 			if (string.IsNullOrWhiteSpace(request.Pseudo))
-				return BadRequest(new { Message = "Pseudo is required." });
+				return BadRequest(new { Message = "Un pseudo est requis." });
 
 			if (string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains("@"))
-				return BadRequest(new { Message = "Valid email is required." });
+				return BadRequest(new { Message = "Un email valide est requis." });
 
 			if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 6)
-				return BadRequest(new { Message = "Password must be at least 6 characters." });
+				return BadRequest(new { Message = "Le mot de passe doit avoir au moins 6 caractères." });
 
 			var existingUser = await _context.Users
 				.FirstOrDefaultAsync(u => u.Email == request.Email);
 
 			if (existingUser != null)
-				return Conflict(new { Message = $"User with email '{request.Email}' already exists." });
+				return Conflict(new { Message = $"L'email utilisateur '{request.Email}' existe déjà." });
 
 			var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
@@ -96,19 +96,19 @@ namespace UserService.Controllers
 		public async Task<IActionResult> Login([FromBody] AuthLoginRequest request)
 		{
 			if (string.IsNullOrWhiteSpace(request.Email))
-				return BadRequest(new { Message = "Email is required." });
+				return BadRequest(new { Message = "Un email est requis." });
 
 			if (string.IsNullOrWhiteSpace(request.Password))
-				return BadRequest(new { Message = "Password is required." });
+				return BadRequest(new { Message = "Un mot de passe est requis." });
 
 			var user = await _context.Users
 				.FirstOrDefaultAsync(u => u.Email == request.Email);
 
 			if (user == null)
-				return Unauthorized(new { Message = "Invalid email or password." });
+				return Unauthorized(new { Message = "Email ou mot de passe invalide." });
 
 			if (string.IsNullOrEmpty(user.PasswordHash) || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-				return Unauthorized(new { Message = "Invalid email or password." });
+				return Unauthorized(new { Message = "Email ou mot de passe invalide." });
 
 			var token = await GetTokenFromAuthService(user);
 

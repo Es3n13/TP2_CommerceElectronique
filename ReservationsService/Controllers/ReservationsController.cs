@@ -70,7 +70,7 @@ namespace ReservationsService.Controllers
 				var existing = await _context.Reservations
 					.AnyAsync(r => r.ResourceId == resourceId &&
 								r.ReservationDate.Date == reservationDate.Date &&
-								r.Status != "Canceled");
+								r.Status != "Annulée");
 				
 				return !existing;
 			}
@@ -93,7 +93,7 @@ namespace ReservationsService.Controllers
 			}
 			catch (Exception)
 			{
-				return StatusCode(500, new { Message = "An error occurred while retrieving reservations." });
+				return StatusCode(500, new { Message = "Une erreur s'est produite durant la récupération de la réservation." });
 			}
 		}
 
@@ -106,14 +106,14 @@ namespace ReservationsService.Controllers
 
 				if (reservation == null)
 				{
-					return NotFound(new { Message = $"Reservation with ID {id} not found." });
+					return NotFound(new { Message = $"La réservation {id} n'a pas été trouvée." });
 				}
 
 				return Ok(reservation);
 			}
 			catch (Exception)
 			{
-				return StatusCode(500, new { Message = "An error occurred while retrieving the reservation." });
+				return StatusCode(500, new { Message = "Une erreur s'est produite durant la récupération de la réservation." });
 			}
 		}
 
@@ -131,7 +131,7 @@ namespace ReservationsService.Controllers
 			}
 			catch (Exception)
 			{
-				return StatusCode(500, new { Message = "An error occurred while retrieving user reservations." });
+				return StatusCode(500, new { Message = "Une erreur s'est produite durant la récupération de la réservation." });
 			}
 		}
 
@@ -142,29 +142,29 @@ namespace ReservationsService.Controllers
 			{
 				if (request.UserId <= 0)
 				{
-					return BadRequest(new { Message = "Valid UserId is required." });
+					return BadRequest(new { Message = "Un ID utilisateur valide est requis." });
 				}
 
 				if (request.ResourceId <= 0)
 				{
-					return BadRequest(new { Message = "Valid ResourceId is required." });
+					return BadRequest(new { Message = "Un ID ressource valide est requis." });
 				}
 
 				if (request.ReservationDate == default)
 				{
-					return BadRequest(new { Message = "ReservationDate is required." });
+					return BadRequest(new { Message = "Une date de réservation valide est requise." });
 				}
 
 				var userExists = await ValidateUserAsync(request.UserId);
 				if (!userExists)
 				{
-					return BadRequest(new { Message = $"User with ID {request.UserId} does not exist." });
+					return BadRequest(new { Message = $"L'uilisateur ID {request.UserId} n'existe pas." });
 				}
 
 				var isAvailable = await IsResourceAvailableAsync(request.ResourceId, request.ReservationDate);
 				if (!isAvailable)
 				{
-					return BadRequest(new { Message = $"Resource with ID {request.ResourceId} is not available on {request.ReservationDate:yyyy-MM-dd}." });
+					return BadRequest(new { Message = $"Resource ID {request.ResourceId} n'est pas disponible le {request.ReservationDate:yyyy-MM-dd}." });
 				}
 
 				var existingReservation = await _context.Reservations
@@ -176,7 +176,7 @@ namespace ReservationsService.Controllers
 
 				if (existingReservation != null)
 				{
-					return Conflict(new { Message = $"User {request.UserId} already reserved resource {request.ResourceId} on {request.ReservationDate:yyyy-MM-dd}." });
+					return Conflict(new { Message = $"L'utilisateur {request.UserId} à déjà réservé la ressource {request.ResourceId} le {request.ReservationDate:yyyy-MM-dd}." });
 				}
 
 				var reservation = new Reservation
@@ -202,7 +202,7 @@ namespace ReservationsService.Controllers
 			}
 			catch (Exception)
 			{
-				return StatusCode(500, new { Message = "An error occurred while creating the reservation." });
+				return StatusCode(500, new { Message = "Une erreur s'est produite durant la récupération de la réservation." });
 			}
 		}
 
@@ -216,11 +216,11 @@ namespace ReservationsService.Controllers
 
                 if (reservation == null)
                 {
-                    return NotFound(new { Message = $"Reservation with ID {id} not found." });
+                    return NotFound(new { Message = $"Reservation ID {id} non trouvée." });
                 }
 
                 // 2. Capture the status BEFORE the update
-                string previousStatus = reservation.Status;
+                string oldStatus = reservation.Status;
                 // 3. Apply updates from the request
                 if (request.ReservationDate.HasValue)
                     reservation.ReservationDate = request.ReservationDate.Value;
@@ -238,17 +238,16 @@ namespace ReservationsService.Controllers
                 await _context.SaveChangesAsync();
 
                 // 5. TRIGGER: Only if status is changing TO "Confirmed" and wasn't before
-                if (request.Status == "Confirmed" && previousStatus != "Confirmed")
+                if (oldStatus != "Confirmée" && reservation.Status == "Confirmée")
                 {
-                    // This call is non-blocking because of the try-catch inside NotificationClient
-                    await _notificationClient.SendConfirmationAsync(reservation.UserId, reservation.Id);
+                    await _notificationClient.SendNotificationAsync(reservation.UserId, "Votre réservation est confirmée!");
                 }
 
                 return Ok(reservation);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Message = "An error occurred while updating the reservation." });
+                return StatusCode(500, new { Message = "Une erreur s'est produite durant la récupération de la réservation." });
             }
         }
 
@@ -261,17 +260,17 @@ namespace ReservationsService.Controllers
 
 				if (reservation == null)
 				{
-					return NotFound(new { Message = $"Reservation with ID {id} not found." });
+					return NotFound(new { Message = $"Reservation ID {id} non trouvée." });
 				}
 
 				_context.Reservations.Remove(reservation);
 				await _context.SaveChangesAsync();
 
-				return Ok(new { Message = $"Reservation with ID {id} deleted successfully." });
+				return Ok(new { Message = $"Reservation ID {id} supprimée avec succès." });
 			}
 			catch (Exception)
 			{
-				return StatusCode(500, new { Message = "An error occurred while deleting the reservation." });
+				return StatusCode(500, new { Message = "Une erreur s'est produite durant la récupération de la réservation." });
 			}
 		}
     }

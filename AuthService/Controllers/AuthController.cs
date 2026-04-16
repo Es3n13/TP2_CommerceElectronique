@@ -32,7 +32,7 @@ namespace AuthService.Controllers
 			var claims = _tokenService.ValidateToken(request.Token);
 
 			if (claims == null)
-				return Unauthorized(new { Message = "Invalid token." });
+				return Unauthorized(new { Message = "Token invalide." });
 
 			return Ok(new
 			{

@@ -56,7 +56,7 @@ namespace ResourcesService.Controllers
 			}
 			catch (Exception)
 			{
-				return StatusCode(500, new { Message = "An error occurred while retrieving resources." });
+				return StatusCode(500, new { Message = "Une erreur s'est produite en récupérant la ressource." });
 			}
 		}
 
@@ -69,14 +69,14 @@ namespace ResourcesService.Controllers
 
 				if (resource == null)
 				{
-					return NotFound(new { Message = $"Resource with ID {id} not found." });
+					return NotFound(new { Message = $"Resource ID {id} non trouvée." });
 				}
 
 				return Ok(resource);
 			}
 			catch (Exception)
 			{
-				return StatusCode(500, new { Message = "An error occurred while retrieving the resource." });
+				return StatusCode(500, new { Message = "Une erreur s'est produite en récupérant la ressource." });
 			}
 		}
 
@@ -87,12 +87,12 @@ namespace ResourcesService.Controllers
 			{
 				if (string.IsNullOrWhiteSpace(request.Name))
 				{
-					return BadRequest(new { Message = "Name is required." });
+					return BadRequest(new { Message = "Un nom est requis." });
 				}
 
 				if (string.IsNullOrWhiteSpace(request.Description))
 				{
-					return BadRequest(new { Message = "Description is required." });
+					return BadRequest(new { Message = "Une description est requise." });
 				}
 
 				var existingResource = await _context.Resources
@@ -103,7 +103,7 @@ namespace ResourcesService.Controllers
 
 				if (existingResource != null)
 				{
-					return Conflict(new { Message = $"Resource '{request.Name}' at location '{request.Location}' already exists." });
+					return Conflict(new { Message = $"Resource '{request.Name}' à '{request.Location}' existe déjà." });
 				}
 
 				var resource = new Resource
@@ -130,7 +130,7 @@ namespace ResourcesService.Controllers
 			}
 			catch (Exception)
 			{
-				return StatusCode(500, new { Message = "An error occurred while creating the resource." });
+				return StatusCode(500, new { Message = "Une erreur s'est produite en récupérant la ressource." });
 			}
 		}
 
@@ -143,7 +143,7 @@ namespace ResourcesService.Controllers
 
 				if (resource == null)
 				{
-					return NotFound(new { Message = $"Resource with ID {id} not found." });
+					return NotFound(new { Message = $"Resource ID {id} non trouvée." });
 				}
 
 				if (!string.IsNullOrEmpty(request.Name))
@@ -169,7 +169,7 @@ namespace ResourcesService.Controllers
 			}
 			catch (Exception)
 			{
-				return StatusCode(500, new { Message = "An error occurred while updating the resource." });
+				return StatusCode(500, new { Message = "Une erreur s'est produite en récupérant la ressource." });
 			}
 		}
 
@@ -182,17 +182,17 @@ namespace ResourcesService.Controllers
 
 				if (resource == null)
 				{
-					return NotFound(new { Message = $"Resource with ID {id} not found." });
+					return NotFound(new { Message = $"Resource ID {id} non trouvée." });
 				}
 
 				_context.Resources.Remove(resource);
 				await _context.SaveChangesAsync();
 
-				return Ok(new { Message = $"Resource with ID {id} deleted successfully." });
+				return Ok(new { Message = $"Resource ID {id} supprimée avec succès." });
 			}
 			catch (Exception)
 			{
-				return StatusCode(500, new { Message = "An error occurred while deleting the resource." });
+				return StatusCode(500, new { Message = "Une erreur s'est produite en récupérant la ressource." });
 			}
 		}
 	}

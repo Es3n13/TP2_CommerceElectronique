@@ -26,27 +26,27 @@ namespace PaymentService.Controllers
 		{
 			if (request.Amount <= 0)
 			{
-				return BadRequest(new { Message = "Amount must be greater than 0." });
+				return BadRequest(new { Message = "Le montant doit être supérieur a 0." });
 			}
 
 			if (request.ReservationId <= 0)
 			{
-				return BadRequest(new { Message = "Valid reservation ID is required." });
+				return BadRequest(new { Message = "Un numéro de réservation valide est requis." });
 			}
 
 			try
 			{
 				var paymentIntent = await _stripeService.CreatePaymentIntentAsync(
 					request.Amount,
-					request.Description ?? $"Payment for reservation {request.ReservationId}",
+					request.Description ?? $"Paiement pour la réservation {request.ReservationId}",
 					request.ReservationId,
 					request.PaymentMethodId
 				);
 
                 // Si le paiement a été confirmé immédiatement mettre à jour le statut de la réservation
-                if (!string.IsNullOrEmpty(request.PaymentMethodId) && paymentIntent.Status == "succeeded")
+                if (!string.IsNullOrEmpty(request.PaymentMethodId) && paymentIntent.Status == "succès")
 				{
-					await _stripeService.UpdateReservationStatusAsync(request.ReservationId, "Confirmed");
+					await _stripeService.UpdateReservationStatusAsync(request.ReservationId, "Confirmée");
 				}
 
 				return Ok(new
@@ -63,7 +63,7 @@ namespace PaymentService.Controllers
 			{
 				return StatusCode(500, new
 				{
-					Message = "Failed to create payment intent.",
+					Message = "Échec de la création de l'intention de paiement.",
 					Error = ex.Message
 				});
 			}
@@ -77,7 +77,7 @@ namespace PaymentService.Controllers
 
 			if (payment == null)
 			{
-				return NotFound(new { Message = "Payment not found." });
+				return NotFound(new { Message = "Paiement non trouvé." });
 			}
 
 			try
@@ -101,7 +101,7 @@ namespace PaymentService.Controllers
 			{
 				return StatusCode(500, new
 				{
-					Message = "Failed to fetch payment from Stripe.",
+					Message = "Échec de la récupération du paiement sur Stripe.",
 					Error = ex.Message
 				});
 			}
@@ -127,7 +127,7 @@ namespace PaymentService.Controllers
 
 			if (payment == null)
 			{
-				return NotFound(new { Message = "Payment not found." });
+				return NotFound(new { Message = "Paiement non trouvé." });
 			}
 
 			try
@@ -142,9 +142,9 @@ namespace PaymentService.Controllers
 				);
 
                 // Mettre à jour le statut de la réservation si le paiement a réussi
-                if (paymentIntent.Status == "succeeded")
+                if (paymentIntent.Status == "succès")
 				{
-					await _stripeService.UpdateReservationStatusAsync(payment.ReservationId, "Confirmed");
+					await _stripeService.UpdateReservationStatusAsync(payment.ReservationId, "Confirmée");
 				}
 
 				return Ok(new
@@ -158,10 +158,10 @@ namespace PaymentService.Controllers
 			}
 			catch (StripeException ex)
 			{
-				await _stripeService.UpdatePaymentStatusAsync(payment.Id, "Failed", ex.Message);
+				await _stripeService.UpdatePaymentStatusAsync(payment.Id, "Échec", ex.Message);
 				return StatusCode(500, new
 				{
-					Message = "Failed to confirm payment.",
+					Message = "Échec de la confirmation du paiement.",
 					Error = ex.Message
 				});
 			}
@@ -175,12 +175,12 @@ namespace PaymentService.Controllers
 
 			if (payment == null)
 			{
-				return NotFound(new { Message = "Payment not found." });
+				return NotFound(new { Message = "Paiement non trouvé." });
 			}
 
-			if (payment.Status != "Succeeded")
+			if (payment.Status != "Succès")
 			{
-				return BadRequest(new { Message = "Only succeeded payments can be refunded." });
+				return BadRequest(new { Message = "Seulement les paiement réussit peuvent être remboursé." });
 			}
 
 			try
@@ -190,7 +190,7 @@ namespace PaymentService.Controllers
 					request?.Amount
 				);
 
-				await _stripeService.UpdatePaymentStatusAsync(payment.Id, "Refunded");
+				await _stripeService.UpdatePaymentStatusAsync(payment.Id, "Remboursé");
 
 				return Ok(new
 				{
@@ -204,7 +204,7 @@ namespace PaymentService.Controllers
 			{
 				return StatusCode(500, new
 				{
-					Message = "Failed to refund payment.",
+					Message = "Échec du remboursement.",
 					Error = ex.Message
 				});
 			}

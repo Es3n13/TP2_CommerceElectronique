@@ -29,7 +29,7 @@ public class NotificationController : ControllerBase
     {
         if (request == null) return BadRequest("Request body cannot be null.");
 
-        _logger.LogInformation("Received notification request for User: {UserId}", request.UserId);
+        _logger.LogInformation("Requête de notification reçue de l'utilisateur: {UserId}", request.UserId);
 
         var notification = new NotificationService.Models.Notification
         {
@@ -47,7 +47,10 @@ public class NotificationController : ControllerBase
         {
             NotificationId = notification.Id,
             Status = notification.Status.ToString(),
-            Message = "Notification sent for delivery."
+            UserId = notification.UserId,
+            Content = notification.Content,
+            Channel = notification.Channel,
+            Message = "Notification envoyée pour livraison."
         });
     }
 
@@ -62,6 +65,9 @@ public class NotificationController : ControllerBase
         {
             NotificationId = notification.Id,
             Status = notification.Status.ToString(),
+            UserId = notification.UserId,
+            Content = notification.Content,
+            Channel = notification.Channel,
             Timestamp = notification.SentAt ?? notification.CreatedAt
         });
     }
