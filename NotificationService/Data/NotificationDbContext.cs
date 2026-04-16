@@ -5,15 +5,23 @@ namespace NotificationService.Data
 {
     public class NotificationDbContext : DbContext
     {
-        public NotificationDbContext(DbContextOptions<NotificationDbContext> options)
-        : base(options) { }
+        public NotificationDbContext(DbContextOptions<NotificationDbContext> options) : base(options)
+        {
+        }
 
         public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Notification>().HasIndex(n => n.UserId);
+
+            // Configure Notification entity
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Content).IsRequired();
+                entity.Property(e => e.UserId).IsRequired();
+            });
         }
     }
 }
