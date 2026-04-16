@@ -26,8 +26,9 @@ builder.Services.AddHttpClient("ResourcesService", client =>
 
 builder.Services.AddHttpClient("NotificationService", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5004/api/notification/");
+    client.BaseAddress = new Uri("http://localhost:5004/");
 });
+builder.Services.AddScoped<ReservationsService.Services.INotificationClient, ReservationsService.Services.NotificationClient>();
 
 // Add JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -54,8 +55,6 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
-
-builder.Services.AddScoped<INotificationClient, NotificationClient>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

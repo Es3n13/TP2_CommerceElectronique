@@ -1,5 +1,6 @@
-using Microsoft.EntityFrameworkCore;
+using Humanizer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using UserService.Data;
 using UserService.Models;
 
@@ -48,7 +49,7 @@ namespace UserService.Controllers
 		{
 			if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
 			{
-				return BadRequest(new { Message = "Email and password are required." });
+				return BadRequest(new { Message = "Email et mot de passe requis." });
 			}
 
 			// Vérifier si l'email existe déjà
@@ -57,7 +58,7 @@ namespace UserService.Controllers
 
 			if (existingUser != null)
 			{
-				return Conflict(new { Message = "User with this email already exists." });
+				return Conflict(new { Message = "Un utilisateur avec ce email existe déjà." });
 			}
 
 			var user = new User
@@ -84,7 +85,7 @@ namespace UserService.Controllers
 		{
 			if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
 			{
-				return BadRequest(new { Message = "Email and password are required." });
+				return BadRequest(new { Message = "Email et mot de passe requis." });
 			}
 
 			var user = await _context.Users
@@ -92,7 +93,7 @@ namespace UserService.Controllers
 
 			if (user == null || !VerifyPassword(request.Password, user.PasswordHash))
 			{
-				return Unauthorized(new { Message = "Invalid email or password." });
+				return Unauthorized(new { Message = "Email ou mot de passe invalide." });
 			}
 
             // Appel AuthService pour générer un token JWT
@@ -108,7 +109,7 @@ namespace UserService.Controllers
 
 			if (!response.IsSuccessStatusCode)
 			{
-				return StatusCode((int)response.StatusCode, new { Message = "Failed to generate token." });
+				return StatusCode((int)response.StatusCode, new { Message = "Échec de la génération du token." });
 			}
 
 			var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
@@ -136,7 +137,7 @@ namespace UserService.Controllers
 
 			if (user == null)
 			{
-				return NotFound(new { Message = "User not found." });
+				return NotFound(new { Message = "Utilisateur non trouvé." });
 			}
 
 			return Ok(user);
@@ -151,7 +152,7 @@ namespace UserService.Controllers
 
 			if (user == null)
 			{
-				return NotFound(new { Message = "User not found." });
+				return NotFound(new { Message = "Utilisateur non trouvé." });
 			}
 
 			return Ok(user);
@@ -165,7 +166,7 @@ namespace UserService.Controllers
 
 			if (user == null)
 			{
-				return NotFound(new { Message = "User not found." });
+				return NotFound(new { Message = "Utilisateur non trouvé." });
 			}
 
 			// Vérifier si l'email existe déjà pour un autre utilisateur
@@ -176,7 +177,7 @@ namespace UserService.Controllers
 
 				if (existingUser != null)
 				{
-					return Conflict(new { Message = "Email already in use." });
+					return Conflict(new { Message = "Utilisateur non trouvé." });
 				}
 
 				user.Email = request.Email;
@@ -202,7 +203,7 @@ namespace UserService.Controllers
 
 			if (user == null)
 			{
-				return NotFound(new { Message = "User not found." });
+				return NotFound(new { Message = "Utilisateur non trouvé." });
 			}
 
 			_context.Users.Remove(user);

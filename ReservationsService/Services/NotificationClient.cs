@@ -15,8 +15,7 @@ namespace ReservationsService.Services
         public async Task SendNotificationAsync(int userId, string message)
         {
             var client = _httpClientFactory.CreateClient("NotificationService");
-            // 0 = Email
-            var request = new { UserId = userId, Content = message, Channel = 0 };
+            var request = new { UserId = userId, Content = message, Channel = 0 }; // 0 = Email
             await client.PostAsJsonAsync("api/notification/send", request);
         }
     }
