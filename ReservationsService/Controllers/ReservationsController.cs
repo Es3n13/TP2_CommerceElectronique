@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReservationsService.Data;
 using ReservationsService.Models;
+using ReservationsService.Services;
 using System.Net.Http;
 
 namespace ReservationsService.Controllers
@@ -32,12 +33,14 @@ namespace ReservationsService.Controllers
 	{
 		private readonly ReservationDbContext _context;
 		private readonly IHttpClientFactory _httpClientFactory;
+        private readonly INotificationClient _notificationClient;
 
-		public ReservationsController(ReservationDbContext context, IHttpClientFactory httpClientFactory)
+        public ReservationsController(ReservationDbContext context, IHttpClientFactory httpClientFactory, INotificationClient notificationClient)
 		{
 			_context = context;
 			_httpClientFactory = httpClientFactory;
-		}
+            _notificationClient = notificationClient;
+        }
 
 		private async Task<bool> ValidateUserAsync(int userId)
 		{
@@ -203,42 +206,53 @@ namespace ReservationsService.Controllers
 			}
 		}
 
-		[HttpPut("{id}")]
-		public async Task<IActionResult> Update(int id, [FromBody] UpdateReservationRequest request)
-		{
-			try
-			{
-				var reservation = await _context.Reservations.FindAsync(id);
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateReservationRequest request)
+        {
+            try
+            {
+                // 1. Find the reservation
+                var reservation = await _context.Reservations.FindAsync(id);
 
-				if (reservation == null)
-				{
-					return NotFound(new { Message = $"Reservation with ID {id} not found." });
-				}
+                if (reservation == null)
+                {
+                    return NotFound(new { Message = $"Reservation with ID {id} not found." });
+                }
 
-				if (request.ReservationDate.HasValue)
-					reservation.ReservationDate = request.ReservationDate.Value;
-				if (request.StartTime.HasValue)
-					reservation.StartTime = request.StartTime;
-				if (request.EndTime.HasValue)
-					reservation.EndTime = request.EndTime;
-				if (!string.IsNullOrEmpty(request.Status))
-					reservation.Status = request.Status;
-				if (request.TotalPrice.HasValue)
-					reservation.TotalPrice = request.TotalPrice;
-				if (request.Notes != null)
-					reservation.Notes = request.Notes;
+                // 2. Capture the status BEFORE the update
+                string previousStatus = reservation.Status;
+                // 3. Apply updates from the request
+                if (request.ReservationDate.HasValue)
+                    reservation.ReservationDate = request.ReservationDate.Value;
+                if (request.StartTime.HasValue)
+                    reservation.StartTime = request.StartTime;
+                if (request.EndTime.HasValue)
+                    reservation.EndTime = request.EndTime;
+                if (!string.IsNullOrEmpty(request.Status))
+                    reservation.Status = request.Status;
+                if (request.TotalPrice.HasValue)
+                    reservation.TotalPrice = request.TotalPrice;
+                if (request.Notes != null)
+                    reservation.Notes = request.Notes;
+                // 4. Save changes to the database
+                await _context.SaveChangesAsync();
 
-				await _context.SaveChangesAsync();
+                // 5. TRIGGER: Only if status is changing TO "Confirmed" and wasn't before
+                if (request.Status == "Confirmed" && previousStatus != "Confirmed")
+                {
+                    // This call is non-blocking because of the try-catch inside NotificationClient
+                    await _notificationClient.SendConfirmationAsync(reservation.UserId, reservation.Id);
+                }
 
-				return Ok(reservation);
-			}
-			catch (Exception)
-			{
-				return StatusCode(500, new { Message = "An error occurred while updating the reservation." });
-			}
-		}
+                return Ok(reservation);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while updating the reservation." });
+            }
+        }
 
-		[HttpDelete("{id}")]
+        [HttpDelete("{id}")]
 		public async Task<IActionResult> Delete(int id)
 		{
 			try
@@ -260,5 +274,5 @@ namespace ReservationsService.Controllers
 				return StatusCode(500, new { Message = "An error occurred while deleting the reservation." });
 			}
 		}
-	}
+    }
 }

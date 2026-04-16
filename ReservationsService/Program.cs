@@ -4,6 +4,7 @@ using Microsoft.OpenApi;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using ReservationsService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,11 @@ builder.Services.AddHttpClient("UserService", client =>
 builder.Services.AddHttpClient("ResourcesService", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5001/api/resources/");
+});
+
+builder.Services.AddHttpClient("NotificationService", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5004/api/notification/");
 });
 
 // Add JWT Authentication
@@ -48,6 +54,9 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+// Register NotificationClient implementation as Transient
+builder.Services.AddTransient<INotificationClient, NotificationClient>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
