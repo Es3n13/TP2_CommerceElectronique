@@ -59,7 +59,7 @@ Une plateforme de microservices e-commerce **headless** prête pour la productio
 | **ResourcesService** | ResourceDb | 5001 | Gestion des produits/ressources | ✅ Oui |
 | **ReservationsService** | ReservationDb | 5002 | Gestion des réservations/commandes | ✅ Oui |
 | **PaymentService** | PaymentDb | 5003 | Traitement des paiements (Stripe) | ✅ Oui |
-| **NotificationService**| - | Variable | Notifications système (Bonus) | ✅ Oui |
+| **NotificationService**| NotificationDb | 5004 | Notifications système (Bonus) | ✅ Oui |
 | **ApiGateway** | - | 8080 | Point d'entrée API unifié + auth JWT | ✅ Oui |
 
 ### Pile Technologique
