@@ -5,7 +5,8 @@ using NotificationService.Interface;
 using NotificationService.Models;
 using NotificationService.Services;
 using NotificationService.Service;
-using SendGrid;
+using Azure.Identity;
+using Microsoft.Extensions.Azure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,17 +18,20 @@ builder.Services.AddOpenApi();
 // Register the Dispatcher
 builder.Services.AddScoped<NotificationDispatcher>();
 
-// Configure SendGrid and User Repository
-builder.Services.Configure<SendGridOptions>(builder.Configuration.GetSection("SendGrid"));
+// Configure ACS and User Repository
+builder.Services.Configure<AcsEmailOptions>(builder.Configuration.GetSection("AzureCommunicationServices"));
+builder.Services.AddAzureClients(clientBuilder =>
+{
+    clientBuilder.AddEmailClient(builder.Configuration["AzureCommunicationServices:Endpoint"], new DefaultAzureCredential());
+});
 builder.Services.AddHttpClient("UserService", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Services:UserServiceUrl"] ?? "http://localhost:5000");
 });
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<ISendGridClient>(sp => new SendGridClient(builder.Configuration["SendGrid:ApiKey"]));
 
 // Register Providers
-builder.Services.AddScoped<INotificationProvider, SendGridEmailProvider>();
+builder.Services.AddScoped<INotificationProvider, AcsEmailProvider>();
 
 builder.Services.AddSingleton<INotificationProvider>(sp =>
     new MockNotificationProvider(NotificationChannel.Sms, sp.GetRequiredService<ILogger<MockNotificationProvider>>()));
