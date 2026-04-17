@@ -106,6 +106,19 @@
       "UpstreamPathTemplate": "/api/auth/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post" ],
       "SwaggerKey": "auth"
+    },
+    {
+      "DownstreamPathTemplate": "/api/notifications/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5004
+        }
+      ],
+      "UpstreamPathTemplate": "/api/notifications/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "SwaggerKey": "notifications"
     }
   ],
   "GlobalConfiguration": {
@@ -159,6 +172,16 @@
           "Name": "AuthService API",
           "Version": "v1",
           "Url": "http://localhost:6001/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "notifications",
+      "Config": [
+        {
+          "Name": "NotificationService API",
+          "Version": "v1",
+          "Url": "http://localhost:5004/swagger/v1/swagger.json"
         }
       ]
     }

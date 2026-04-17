@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace NotificationService.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/notifications")]
 public class NotificationController : ControllerBase
 {
     private readonly NotificationDispatcher _dispatcher;

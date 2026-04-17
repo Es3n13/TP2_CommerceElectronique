@@ -35,6 +35,14 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowGateway",
+    policy => policy.WithOrigins("http://localhost:8080")
+    .AllowAnyMethod()
+    .AllowAnyHeader());
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -55,6 +63,8 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseCors("AllowGateway");
 
 app.UseAuthorization();
 
