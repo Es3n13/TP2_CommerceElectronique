@@ -23,9 +23,9 @@ public class NotificationDispatcher
         var provider = _providers.FirstOrDefault(p => p.Channel == notification.Channel);
         if (provider == null)
         {
-            _logger.LogError("No provider found for channel {Channel}", notification.Channel);
+            _logger.LogError("Aucun fournisseur pour {Channel}", notification.Channel);
             notification.Status = NotificationStatus.Failed;
-            notification.ErrorMessage = "No provider found for the requested channel.";
+            notification.ErrorMessage = "Aucun fournisseur disponible.";
 
             _context.Notifications.Update(notification);
             await _context.SaveChangesAsync();
@@ -39,12 +39,12 @@ public class NotificationDispatcher
             notification.SentAt = success ? DateTime.UtcNow : null;
             if (!success)
             {
-                notification.ErrorMessage = "Provider failed to send notification.";
+                notification.ErrorMessage = "Le fournisseur n'a pas réussi à envoyer la notification.";
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error dispatching notification {Id}", notification.Id);
+            _logger.LogError(ex, "Erreur durant l'envoit de la notification {Id}", notification.Id);
             notification.Status = NotificationStatus.Failed;
             notification.ErrorMessage = ex.Message;
         }

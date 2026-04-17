@@ -66,7 +66,6 @@ namespace ReservationsService.Controllers
 				if (!response.IsSuccessStatusCode)
 					return false;
 
-				// Check existing reservations for this resource & date
 				var existing = await _context.Reservations
 					.AnyAsync(r => r.ResourceId == resourceId &&
 								r.ReservationDate.Date == reservationDate.Date &&
@@ -93,7 +92,7 @@ namespace ReservationsService.Controllers
 			}
 			catch (Exception)
 			{
-				return StatusCode(500, new { Message = "An error occurred while retrieving reservations." });
+				return StatusCode(500, new { Message = "Une erreur s'est produite durant la récupération de la réservation." });
 			}
 		}
 
@@ -106,14 +105,14 @@ namespace ReservationsService.Controllers
 
 				if (reservation == null)
 				{
-					return NotFound(new { Message = $"Reservation with ID {id} not found." });
+					return NotFound(new { Message = $"Reservation ID {id} non trouvée." });
 				}
 
 				return Ok(reservation);
 			}
 			catch (Exception)
 			{
-				return StatusCode(500, new { Message = "An error occurred while retrieving the reservation." });
+				return StatusCode(500, new { Message = "Une erreur s'est produite durant la récupération de la réservation." });
 			}
 		}
 
@@ -131,7 +130,7 @@ namespace ReservationsService.Controllers
 			}
 			catch (Exception)
 			{
-				return StatusCode(500, new { Message = "An error occurred while retrieving user reservations." });
+				return StatusCode(500, new { Message = "Une erreur s'est produite durant la récupération de la réservation." });
 			}
 		}
 
@@ -142,29 +141,29 @@ namespace ReservationsService.Controllers
 			{
 				if (request.UserId <= 0)
 				{
-					return BadRequest(new { Message = "Valid UserId is required." });
+					return BadRequest(new { Message = "Un UserId valide est requis." });
 				}
 
 				if (request.ResourceId <= 0)
 				{
-					return BadRequest(new { Message = "Valid ResourceId is required." });
+					return BadRequest(new { Message = "Un RessourceId est requis." });
 				}
 
 				if (request.ReservationDate == default)
 				{
-					return BadRequest(new { Message = "ReservationDate is required." });
+					return BadRequest(new { Message = "Une date de réservation est requise." });
 				}
 
 				var userExists = await ValidateUserAsync(request.UserId);
 				if (!userExists)
 				{
-					return BadRequest(new { Message = $"User with ID {request.UserId} does not exist." });
+					return BadRequest(new { Message = $"Utilisateur ID {request.UserId} n'existe pas." });
 				}
 
 				var isAvailable = await IsResourceAvailableAsync(request.ResourceId, request.ReservationDate);
 				if (!isAvailable)
 				{
-					return BadRequest(new { Message = $"Resource with ID {request.ResourceId} is not available on {request.ReservationDate:yyyy-MM-dd}." });
+					return BadRequest(new { Message = $"Resource ID {request.ResourceId} n'est pas disponible le {request.ReservationDate:yyyy-MM-dd}." });
 				}
 
 				var existingReservation = await _context.Reservations
@@ -176,7 +175,7 @@ namespace ReservationsService.Controllers
 
 				if (existingReservation != null)
 				{
-					return Conflict(new { Message = $"User {request.UserId} already reserved resource {request.ResourceId} on {request.ReservationDate:yyyy-MM-dd}." });
+					return Conflict(new { Message = $"Utilisateur {request.UserId} à déjà réserver la ressource {request.ResourceId} le {request.ReservationDate:yyyy-MM-dd}." });
 				}
 
 				var reservation = new Reservation
@@ -202,7 +201,7 @@ namespace ReservationsService.Controllers
 			}
 			catch (Exception)
 			{
-				return StatusCode(500, new { Message = "An error occurred while creating the reservation." });
+				return StatusCode(500, new { Message = "Une erreur s'est produite durant la récupération de la réservation." });
 			}
 		}
 
@@ -215,10 +214,9 @@ namespace ReservationsService.Controllers
 
                 if (reservation == null)
                 {
-                    return NotFound(new { Message = $"Reservation with ID {id} not found." });
+                    return NotFound(new { Message = $"Reservation ID {id} non trouvée." });
                 }
 
-                // 1. Capture the status before we change it // <--- NEW
                 string oldStatus = reservation.Status;
 
                 if (request.ReservationDate.HasValue)
@@ -236,12 +234,11 @@ namespace ReservationsService.Controllers
 
                 await _context.SaveChangesAsync();
 
-                // 2. Check if the status just transitioned to 'Confirmed' // <--- NEW
                 if (oldStatus != "Confirmed" && reservation.Status == "Confirmed")
                 {
                     await _notificationClient.SendNotificationAsync(
                     reservation.UserId,
-                    "Your reservation has been confirmed! Thank you for your payment."
+                    "Votre réservation à été confirmeé! Merci pour votre paiement."
                     );
                 }
 
@@ -249,7 +246,7 @@ namespace ReservationsService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(500, new { Message = "An error occurred while updating the reservation." });
+                return StatusCode(500, new { Message = "Une erreur s'est produite durant la récupération de la réservation." });
             }
         }
 
@@ -263,17 +260,17 @@ namespace ReservationsService.Controllers
 
 				if (reservation == null)
 				{
-					return NotFound(new { Message = $"Reservation with ID {id} not found." });
+					return NotFound(new { Message = $"Reservation ID {id} non trouveé" });
 				}
 
 				_context.Reservations.Remove(reservation);
 				await _context.SaveChangesAsync();
 
-				return Ok(new { Message = $"Reservation with ID {id} deleted successfully." });
+				return Ok(new { Message = $"Reservation ID {id} effacée avec succès." });
 			}
 			catch (Exception)
 			{
-				return StatusCode(500, new { Message = "An error occurred while deleting the reservation." });
+				return StatusCode(500, new { Message = "Une erreur s'est produite durant la récupération de la réservation." });
 			}
 		}
 	}

@@ -52,12 +52,7 @@ builder.Services.AddSwaggerForOcelot(builder.Configuration);
 
 var app = builder.Build();
 
-// Enable CORS FIRST (must run before authentication and routing)
 app.UseCors("CorsPolicy");
-
-// Note: NOT using app.UseAuthentication() or app.UseAuthorization()
-// because Ocelot handles authentication per-route via ocelot.json
-// Global auth middleware would block all requests including public routes
 
 app.UseSwaggerForOcelotUI(opt =>
 {

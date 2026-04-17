@@ -30,7 +30,6 @@ builder.Services.AddHttpClient("NotificationService", client =>
 });
 builder.Services.AddScoped<ReservationsService.Services.INotificationClient, ReservationsService.Services.NotificationClient>();
 
-// Add JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["SecretKey"] ?? "sk_dyb3FYyquQA3w8ZtrRVeJS7iIn2IXA2g";
 
@@ -66,7 +65,6 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1"
     });
 
-    // Add JWT Bearer Authentication to Swagger
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",

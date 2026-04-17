@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["SecretKey"]!
-    ?? throw new InvalidOperationException("JWT SecretKey is not configured.");
+    ?? throw new InvalidOperationException("La clé secrète JWT n'est pas configurée.");
 
 // Register HttpClient
 builder.Services.AddHttpClient();
