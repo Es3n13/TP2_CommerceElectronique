@@ -1,3 +1,4 @@
+using Azure;
 using Azure.Communication.Email;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -41,8 +42,8 @@ namespace NotificationService.Service
 
                 var emailMessage = new EmailMessage(
                     senderAddress: _options.SenderAddress,
-                    content: new EmailContent(_options.SenderName, "Notification", notification.Content),
-                    recipients: new List<EmailAddress> { new EmailAddress(userEmail) }
+                    content: new EmailContent("Notification", notification.Content),
+                    recipients: new EmailRecipients(new List<EmailAddress> { new EmailAddress(userEmail) })
                 );
 
                 var emailSendOperation = await _emailClient.SendAsync(WaitUntil.Completed, emailMessage);
