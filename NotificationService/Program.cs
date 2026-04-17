@@ -4,6 +4,8 @@ using NotificationService.Data;
 using NotificationService.Interface;
 using NotificationService.Models;
 using NotificationService.Services;
+using NotificationService.Service;
+using SendGrid;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +17,17 @@ builder.Services.AddOpenApi();
 // Register the Dispatcher
 builder.Services.AddScoped<NotificationDispatcher>();
 
-// Register Mock Providers for all channels
-builder.Services.AddSingleton<INotificationProvider>(sp =>
-    new MockNotificationProvider(NotificationChannel.Email, sp.GetRequiredService<ILogger<MockNotificationProvider>>()));
+// Configure SendGrid and User Repository
+builder.Services.Configure<SendGridOptions>(builder.Configuration.GetSection("SendGrid"));
+builder.Services.AddHttpClient("UserService", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Services:UserServiceUrl"] ?? "http://localhost:5000");
+});
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ISendGridClient>(sp => new SendGridClient(builder.Configuration["SendGrid:ApiKey"]));
+
+// Register Providers
+builder.Services.AddScoped<INotificationProvider, SendGridEmailProvider>();
 
 builder.Services.AddSingleton<INotificationProvider>(sp =>
     new MockNotificationProvider(NotificationChannel.Sms, sp.GetRequiredService<ILogger<MockNotificationProvider>>()));
