@@ -1,0 +1,49 @@
+name: Trigger auto deployment for env-tp2-commerce
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/env-tp2-commerce-AutoDeployTrigger-760fa719-45aa-4b97-8421-2093f2dc1b43.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.ENVTP2COMMERCE_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.ENVTP2COMMERCE_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.ENVTP2COMMERCE_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          _targetLabelKey_: _targetLabel_
+          registryUrl: tp2commerce.azurecr.io
+          registryUsername: ${{ secrets.ENVTP2COMMERCE_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.ENVTP2COMMERCE_REGISTRY_PASSWORD }}
+          containerAppName: env-tp2-commerce
+          resourceGroup: rp-tp2-commerce
+          imageToBuild: tp2commerce.azurecr.io/env-tp2-commerce:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
