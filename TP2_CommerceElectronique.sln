@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.2.11415.280 d18.0
+VisualStudioVersion = 18.2.11415.280
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiGateway", "ApiGateway\ApiGateway.csproj", "{8B34E7A7-6E3F-4A0C-9B4D-1E2A3F4D5E6F}"
 EndProject
@@ -13,6 +13,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourcesService", "ResourcesService\ResourcesService.csproj", "{57D7B292-7334-46C3-AE1C-E1E43FCA0168}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService", "UserService\UserService.csproj", "{4B84782D-908C-4657-BE89-294F3BC91B4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService", "NotificationService\NotificationService.csproj", "{2ED9F3BD-8376-438E-B95F-7D18666E4CEE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,8 +46,15 @@ Global
 		{4B84782D-908C-4657-BE89-294F3BC91B4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B84782D-908C-4657-BE89-294F3BC91B4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B84782D-908C-4657-BE89-294F3BC91B4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2ED9F3BD-8376-438E-B95F-7D18666E4CEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ED9F3BD-8376-438E-B95F-7D18666E4CEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ED9F3BD-8376-438E-B95F-7D18666E4CEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ED9F3BD-8376-438E-B95F-7D18666E4CEE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7E4607C4-2081-4106-BEC0-8A180E366E37}
 	EndGlobalSection
 EndGlobal

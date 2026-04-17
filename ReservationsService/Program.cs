@@ -4,6 +4,7 @@ using Microsoft.OpenApi;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using ReservationsService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,12 @@ builder.Services.AddHttpClient("ResourcesService", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5001/api/resources/");
 });
+
+builder.Services.AddHttpClient("NotificationService", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5004/");
+});
+builder.Services.AddScoped<ReservationsService.Services.INotificationClient, ReservationsService.Services.NotificationClient>();
 
 // Add JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
