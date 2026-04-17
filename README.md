@@ -4,7 +4,7 @@
 **Trimestre :** Hiver 2026  
 **Institution :** UQAR (Université du Québec à Rimouski)  
 **Dépôt :** `Es3n13/TP2_CommerceElectronique`  
-**Branche :** `V.Beta` (Stable/En pause) | `V.Alpha` (Développement) | `main` (Base)
+**Branche :** `V.Beta` (Stable/En cours) | `V.Alpha` (Développement) | `main` (Base)
 
 ---
 
@@ -12,7 +12,7 @@
 
 Une plateforme de microservices e-commerce **headless** prête pour la production, construite avec ASP.NET Core. Ce projet implémente une architecture backend uniquement (Web APIs) conçue pour être consommée par des frontends externes ou intégrée via une passerelle d'API (API Gateway).
 
-**État actuel :** ❄️ **EN PAUSE** (Stabilisée et finalisée pour la phase actuelle).
+**État actuel :** 🚀 **EN COURS, SPRINT FINAL**
 
 **Caractéristiques principales :**
 - ✅ 6 microservices pleinement fonctionnels
@@ -28,9 +28,15 @@ Une plateforme de microservices e-commerce **headless** prête pour la productio
 
 ---
 
-## 🔥 Mises à jour récentes (15 avril 2026)
+## 🔥 Mises à jour récentes
 
-### 🔧 Stabilisations Finales
+### 📅 17 avril 2026
+1. **Correction du NotificationService ✅**
+   - Résolution d'un décalage de route (route mismatch) entre le singulier et le pluriel dans les endpoints du service de notification.
+2. **Planification du Projet ✅**
+   - Consolidation et alignement des feuilles de route (roadmaps) pour le sprint final.
+
+### 📅 15 avril 2026
 1. **Vérification de l'architecture Headless ✅**
    - Confirmation du système comme une suite pure de Web API.
    - Aucune implémentation frontend ; toutes les interactions se font via SwaggerUI ou des appels API.
@@ -39,8 +45,6 @@ Une plateforme de microservices e-commerce **headless** prête pour la productio
    - Les services ont désormais la capacité d'envoyer des notifications (vérifié et fonctionnel).
 3. **Stabilité du UserService ✅**
    - Vérification finale de la stabilité du `UserService` et de son intégration avec le flux d'authentification.
-4. **État du projet : En pause ❄️**
-   - Le projet est maintenant dans un état stabilisé, avec toutes les fonctionnalités de base et bonus pour la phase actuelle implémentées et vérifiées.
 
 ---
 
@@ -55,7 +59,7 @@ Une plateforme de microservices e-commerce **headless** prête pour la productio
 | **ResourcesService** | ResourceDb | 5001 | Gestion des produits/ressources | ✅ Oui |
 | **ReservationsService** | ReservationDb | 5002 | Gestion des réservations/commandes | ✅ Oui |
 | **PaymentService** | PaymentDb | 5003 | Traitement des paiements (Stripe) | ✅ Oui |
-| **NotificationService**| NotificationDb | 5004 | Notifications système (Bonus) | ✅ Oui |
+| **NotificationService**| - | Variable | Notifications système (Bonus) | ✅ Oui |
 | **ApiGateway** | - | 8080 | Point d'entrée API unifié + auth JWT | ✅ Oui |
 
 ### Pile Technologique
@@ -223,15 +227,26 @@ La plateforme inclut un système complet de révocation de jetons JWT utilisant 
 ## 📊 Documentation de l'API
 
 - **Swagger agrégé de la passerelle :** `http://localhost:8080/swagger`
-- **Swaggers individuels des services :** Accessibles via `/swagger` sur le port de chaque service.
+- **Swaggers individuels des services :** Accessibles via `/swagger` on the port of each service.
 
 ---
 
 ## 🧪 Tests
 
+### Exécution globale
 ```bash
 dotnet test
 ```
+
+### Cas de Tests par Service
+
+| Service | Cas de Tests Principaux |
+|---------|-------------------------|
+| **UserService** | Enregistrement utilisateur, Connexion (Login), Validation du jeton, Mise à jour du profil. |
+| **ResourcesService** | Création de ressources, Listage des produits, Recherche par critères, Mise à jour de l'inventaire. |
+| **ReservationsService** | Création de réservation, Annulation de commande, Historique des réservations, Vérification du statut. |
+| **PaymentService** | Création d'intention Stripe, Confirmation du paiement, Processus de remboursement. |
+| **NotificationService** | Envoi de notification, Récupération des logs, Vérification du statut de livraison. |
 
 ---
 
@@ -270,7 +285,7 @@ TP2_CommerceElectronique/
 - [x] Standardisation du framework (.NET 10.0)
 - [x] Bonus : Service de notification implémenté et vérifié
 
-### Phase 3 : Déploiement ⏳ NON COMMENCÉ
+### Phase 3 : Déploiement ⏳ EN COURS (Sprint Final)
 - [ ] Déploiement Azure
 - [ ] Configuration de production
 
@@ -302,4 +317,4 @@ TP2_CommerceElectronique/
 
 ---
 
-*Dernière mise à jour : 15 avril 2026 | État du projet : ❄️ En pause*
+*Dernière mise à jour : 17 avril 2026 | État du projet : 🚀 En cours, sprint final*
