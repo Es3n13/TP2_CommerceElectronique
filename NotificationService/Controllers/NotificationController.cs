@@ -39,10 +39,30 @@ public class NotificationController : ControllerBase
             Status = NotificationStatus.Pending
         };
 
-        _context.Notifications.Add(notification);
-        await _context.SaveChangesAsync();
+        try
+        {
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur dans la base de données pendant la sauvegarde de la notification de l'utilisateur {UserId}", request.UserId);
+            return StatusCode(500, new { Message = "Erreur inter de la base de données." });
+        }
 
-        await _dispatcher.DispatchAsync(notification);
+        try
+        {
+            await _dispatcher.DispatchAsync(notification);
+            notification.Status = NotificationStatus.Sent;
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Dispatch échoué pour la notification {Id}. inscrit comme Failed.", notification.Id);
+            notification.Status = NotificationStatus.Failed;
+            await _context.SaveChangesAsync();
+        }
+
         return Ok(new
         {
             NotificationId = notification.Id,
@@ -50,7 +70,9 @@ public class NotificationController : ControllerBase
             UserId = notification.UserId,
             Content = notification.Content,
             Channel = notification.Channel,
-            Message = "Notification envoyée pour livraison."
+            Message = notification.Status == NotificationStatus.Sent
+        ? "Notification envoyée avec succès."
+        : "Notification enregistrée, mais une erreur est survenue lors de la livraison."
         });
     }
 

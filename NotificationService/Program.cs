@@ -9,13 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
 builder.Services.AddOpenApi();
 
-// Register the Dispatcher
 builder.Services.AddScoped<NotificationDispatcher>();
 
-// Register Mock Providers for all channels
 builder.Services.AddSingleton<INotificationProvider>(sp =>
     new MockNotificationProvider(NotificationChannel.Email, sp.GetRequiredService<ILogger<MockNotificationProvider>>()));
 
@@ -45,24 +43,23 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
+app.UseSwagger();
+app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Notification Service API v1");
     });
+
+if (app.Environment.IsDevelopment())
+{
+
 
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<NotificationDbContext>();
     context.Database.EnsureCreated();
 }
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.MapOpenApi();
+
 
 app.UseCors("AllowGateway");
 

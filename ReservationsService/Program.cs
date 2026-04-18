@@ -26,7 +26,7 @@ builder.Services.AddHttpClient("ResourcesService", client =>
 
 builder.Services.AddHttpClient("NotificationService", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5004/");
+    client.BaseAddress = new Uri("https://tp2-commerce-notification-g4cefzb7hbcrfqe7.eastus-01.azurewebsites.net/");
 });
 builder.Services.AddScoped<ReservationsService.Services.INotificationClient, ReservationsService.Services.NotificationClient>();
 

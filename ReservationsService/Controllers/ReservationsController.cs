@@ -43,27 +43,24 @@ namespace ReservationsService.Controllers
         }
 
         private async Task<bool> ValidateUserAsync(int userId)
-		{
-			try
-			{
-				var client = _httpClientFactory.CreateClient("UserService");
-				var response = await client.GetAsync($"{userId}");
-				return response.IsSuccessStatusCode;
-			}
-			catch
-			{
-				return false;
-			}
-		}
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("UserService");
+                var response = await client.GetAsync($"/api/users/{userId}");
+                return response.IsSuccessStatusCode;
+            }
+            catch { return false; }
+        }
 
-		private async Task<bool> IsResourceAvailableAsync(int resourceId, DateTime reservationDate)
+        private async Task<bool> IsResourceAvailableAsync(int resourceId, DateTime reservationDate)
 		{
 			try
 			{
 				var client = _httpClientFactory.CreateClient("ResourcesService");
-				var response = await client.GetAsync($"{resourceId}");
-				
-				if (!response.IsSuccessStatusCode)
+                var response = await client.GetAsync($"/api/resources/{resourceId}");
+
+                if (!response.IsSuccessStatusCode)
 					return false;
 
 				// Check existing reservations for this resource & date
@@ -218,7 +215,6 @@ namespace ReservationsService.Controllers
                     return NotFound(new { Message = $"Reservation with ID {id} not found." });
                 }
 
-                // 1. Capture the status before we change it // <--- NEW
                 string oldStatus = reservation.Status;
 
                 if (request.ReservationDate.HasValue)
@@ -236,7 +232,6 @@ namespace ReservationsService.Controllers
 
                 await _context.SaveChangesAsync();
 
-                // 2. Check if the status just transitioned to 'Confirmed' // <--- NEW
                 if (oldStatus != "Confirmed" && reservation.Status == "Confirmed")
                 {
                     await _notificationClient.SendNotificationAsync(

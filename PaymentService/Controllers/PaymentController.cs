@@ -20,57 +20,78 @@ namespace PaymentService.Controllers
 			_context = context;
 		}
 
-		// POST /api/payments/create - Créer un payment intent
-		[HttpPost("create")]
-		public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentRequest request)
-		{
-			if (request.Amount <= 0)
-			{
-				return BadRequest(new { Message = "Amount must be greater than 0." });
-			}
+        [HttpPost("create")]
+        public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentRequest request)
+        {
+            if (request.Amount <= 0)
+            {
+                return BadRequest(new { Message = "Amount must be greater than 0." });
+            }
 
-			if (request.ReservationId <= 0)
-			{
-				return BadRequest(new { Message = "Valid reservation ID is required." });
-			}
+            if (request.ReservationId <= 0)
+            {
+                return BadRequest(new { Message = "Valid reservation ID is required." });
+            }
 
-			try
-			{
-				var paymentIntent = await _stripeService.CreatePaymentIntentAsync(
-					request.Amount,
-					request.Description ?? $"Payment for reservation {request.ReservationId}",
-					request.ReservationId,
-					request.PaymentMethodId
-				);
+            try
+            {
+                var paymentIntent = await _stripeService.CreatePaymentIntentAsync(
+                request.Amount,
+                request.Description ?? $"Payment for reservation {request.ReservationId}",
+                request.ReservationId,
+                request.PaymentMethodId
+                );
 
-                // Si le paiement a été confirmé immédiatement mettre à jour le statut de la réservation
                 if (!string.IsNullOrEmpty(request.PaymentMethodId) && paymentIntent.Status == "succeeded")
-				{
-					await _stripeService.UpdateReservationStatusAsync(request.ReservationId, "Confirmed");
-				}
+                {
+                    try
+                    {
+                        await _stripeService.UpdateReservationStatusAsync(request.ReservationId, "Confirmed");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Non-critical error updating reservation {request.ReservationId}: {ex.Message}");
+                    }
+                }
 
-				return Ok(new
-				{
-					PaymentIntentId = paymentIntent.Id,
-					ClientSecret = paymentIntent.ClientSecret,
-					Amount = paymentIntent.Amount / 100m,
-					Currency = paymentIntent.Currency,
-					Status = paymentIntent.Status,
-					Created = paymentIntent.Created
-				});
-			}
-			catch (StripeException ex)
-			{
-				return StatusCode(500, new
-				{
-					Message = "Failed to create payment intent.",
-					Error = ex.Message
-				});
-			}
-		}
+                return Ok(new
+                {
+                    PaymentIntentId = paymentIntent.Id,
+                    ClientSecret = paymentIntent.ClientSecret,
+                    Amount = paymentIntent.Amount / 100m,
+                    Currency = paymentIntent.Currency,
+                    Status = paymentIntent.Status,
+                    Created = paymentIntent.Created
+                });
+            }
+            catch (StripeException ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "Stripe API Error.",
+                    Error = ex.Message
+                });
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(502, new
+                {
+                    Message = "External Service Communication Error.",
+                    Error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "An unexpected system error occurred.",
+                    Error = ex.Message
+                });
+            }
+        }
 
-		// GET /api/payments/{id} - Get les détails du paiement
-		[HttpGet("{id}")]
+        // GET /api/payments/{id} - Get les détails du paiement
+        [HttpGet("{id}")]
 		public async Task<IActionResult> GetPayment(int id)
 		{
 			var payment = await _context.Payments.FindAsync(id);

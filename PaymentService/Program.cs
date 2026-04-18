@@ -10,13 +10,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<PaymentDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("PaymentDbConnection")
+        builder.Configuration.GetConnectionString("DefaultConnection")
     )
 );
 
 builder.Services.AddHttpClient("ReservationsService", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5002");
+    client.BaseAddress = new Uri("https://tp2-commerce-reservation-gdhzdafbhzbmfah4.eastus-01.azurewebsites.net/");
 });
 
 builder.Services.AddScoped<PaymentService.Services.StripeService>();
@@ -24,7 +24,6 @@ builder.Services.AddScoped<PaymentService.Services.StripeService>();
 var stripeSettings = builder.Configuration.GetSection("Stripe");
 StripeConfiguration.ApiKey = stripeSettings["SecretKey"];
 
-// Add JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["SecretKey"] ?? "sk_dyb3FYyquQA3w8ZtrRVeJS7iIn2IXA2g";
 
@@ -60,7 +59,6 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1"
     });
 
-    // Add JWT Bearer Authentication to Swagger
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -79,14 +77,14 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
+app.UseSwagger();
+app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Payment Service API v1");
     });
 
+if (app.Environment.IsDevelopment())
+{
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
     context.Database.EnsureCreated();

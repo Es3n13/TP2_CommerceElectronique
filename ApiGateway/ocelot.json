@@ -2,11 +2,11 @@
   "Routes": [
     {
       "DownstreamPathTemplate": "/api/users/register",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5000
+          "Host": "tp2-commerce-user-ggcthbeqdyapahhf.eastus-01.azurewebsites.net",
+          "Port": 443
         }
       ],
       "UpstreamPathTemplate": "/api/users/register",
@@ -15,11 +15,11 @@
     },
     {
       "DownstreamPathTemplate": "/api/users/login",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5000
+          "Host": "tp2-commerce-user-ggcthbeqdyapahhf.eastus-01.azurewebsites.net",
+          "Port": 443
         }
       ],
       "UpstreamPathTemplate": "/api/users/login",
@@ -28,11 +28,11 @@
     },
     {
       "DownstreamPathTemplate": "/api/users/{everything}",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5000
+          "Host": "tp2-commerce-user-ggcthbeqdyapahhf.eastus-01.azurewebsites.net",
+          "Port": 443
         }
       ],
       "UpstreamPathTemplate": "/api/users/{everything}",
@@ -45,11 +45,11 @@
     },
     {
       "DownstreamPathTemplate": "/api/resources/{everything}",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5001
+          "Host": "tp2-commerce-resource-ecgzfgarg3badxgu.eastus-01.azurewebsites.net",
+          "Port": 443
         }
       ],
       "UpstreamPathTemplate": "/api/resources/{everything}",
@@ -62,11 +62,11 @@
     },
     {
       "DownstreamPathTemplate": "/api/reservations/{everything}",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5002
+          "Host": "tp2-commerce-reservation-gdhzdafbhzbmfah4.eastus-01.azurewebsites.net",
+          "Port": 443
         }
       ],
       "UpstreamPathTemplate": "/api/reservations/{everything}",
@@ -79,11 +79,11 @@
     },
     {
       "DownstreamPathTemplate": "/api/payments/{everything}",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5003
+          "Host": "tp2-commerce-payment-e7hyd3d2dteyeud8.eastus-01.azurewebsites.net",
+          "Port": 443
         }
       ],
       "UpstreamPathTemplate": "/api/payments/{everything}",
@@ -95,12 +95,12 @@
       "SwaggerKey": "payments"
     },
     {
-      "DownstreamPathTemplate": "/api/{everything}",
-      "DownstreamScheme": "http",
+      "DownstreamPathTemplate": "/api/auth/{everything}",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 6001
+          "Host": "tp2-commerce-auth-dac8hkc8c7akh0dx.eastus-01.azurewebsites.net",
+          "Port": 443
         }
       ],
       "UpstreamPathTemplate": "/api/auth/{everything}",
@@ -109,11 +109,11 @@
     },
     {
       "DownstreamPathTemplate": "/api/notifications/{everything}",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5004
+          "Host": "tp2-commerce-notification-g4cefzb7hbcrfqe7.eastus-01.azurewebsites.net",
+          "Port": 443
         }
       ],
       "UpstreamPathTemplate": "/api/notifications/{everything}",
@@ -122,7 +122,7 @@
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "http://localhost:8080"
+    "BaseUrl": "https://tp2-commerce-gateway-hyapdzh7hrb7dfcf.eastus-01.azurewebsites.net"
   },
   "SwaggerEndPoints": [
     {
@@ -131,7 +131,7 @@
         {
           "Name": "UserService API",
           "Version": "v1",
-          "Url": "http://localhost:5000/swagger/v1/swagger.json"
+          "Url": "https://tp2-commerce-user-ggcthbeqdyapahhf.eastus-01.azurewebsites.net/swagger/v1/swagger.json"
         }
       ]
     },
@@ -141,7 +141,7 @@
         {
           "Name": "ResourcesService API",
           "Version": "v1",
-          "Url": "http://localhost:5001/swagger/v1/swagger.json"
+          "Url": "https://tp2-commerce-resource-ecgzfgarg3badxgu.eastus-01.azurewebsites.net/swagger/v1/swagger.json"
         }
       ]
     },
@@ -151,7 +151,7 @@
         {
           "Name": "ReservationsService API",
           "Version": "v1",
-          "Url": "http://localhost:5002/swagger/v1/swagger.json"
+          "Url": "https://tp2-commerce-reservation-gdhzdafbhzbmfah4.eastus-01.azurewebsites.net/swagger/v1/swagger.json"
         }
       ]
     },
@@ -161,7 +161,7 @@
         {
           "Name": "PaymentService API",
           "Version": "v1",
-          "Url": "http://localhost:5003/swagger/v1/swagger.json"
+          "Url": "https://tp2-commerce-payment-e7hyd3d2dteyeud8.eastus-01.azurewebsites.net/swagger/v1/swagger.json"
         }
       ]
     },
@@ -171,7 +171,7 @@
         {
           "Name": "AuthService API",
           "Version": "v1",
-          "Url": "http://localhost:6001/swagger/v1/swagger.json"
+          "Url": "https://tp2-commerce-auth-dac8hkc8c7akh0dx.eastus-01.azurewebsites.net/swagger/v1/swagger.json"
         }
       ]
     },
@@ -181,7 +181,7 @@
         {
           "Name": "NotificationService API",
           "Version": "v1",
-          "Url": "http://localhost:5004/swagger/v1/swagger.json"
+          "Url": "https://tp2-commerce-notification-g4cefzb7hbcrfqe7.eastus-01.azurewebsites.net/swagger/v1/swagger.json"
         }
       ]
     }
