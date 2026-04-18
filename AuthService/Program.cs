@@ -18,7 +18,7 @@ builder.Services.AddHttpClient();
 // Register Database Context
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("AuthDbConnection")
+        builder.Configuration.GetConnectionString("DefaultConnection")
     )
 );
 
@@ -79,11 +79,9 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-	app.UseSwagger();
-	app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAuthentication();
 app.UseAuthorization();

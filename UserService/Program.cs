@@ -9,13 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("UserDbConnection")
+        builder.Configuration.GetConnectionString("DefaultConnection")
     )
 );
 
 builder.Services.AddHttpClient("AuthService", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:6001");
+    var authUrl = builder.Configuration["AuthServiceUrl"] ?? "http://localhost:6001";
+    client.BaseAddress = new Uri(authUrl);
 });
 
 // Add JWT Authentication
@@ -73,11 +74,9 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-	app.UseSwagger();
-	app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAuthentication();
 app.UseAuthorization();

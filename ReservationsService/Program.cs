@@ -10,18 +10,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ReservationDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("ReservationDbConnection")
+        builder.Configuration.GetConnectionString("DefaultConnection")
     )
 );
 
 builder.Services.AddHttpClient("UserService", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5000/api/users/");
+    client.BaseAddress = new Uri("https://tp2-commerce-user-ggcthbeqdyapahhf.eastus-01.azurewebsites.net/");
 });
 
 builder.Services.AddHttpClient("ResourcesService", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5001/api/resources/");
+    client.BaseAddress = new Uri("https://tp2-commerce-resource-ecgzfgarg3badxgu.eastus-01.azurewebsites.net/");
 });
 
 builder.Services.AddHttpClient("NotificationService", client =>
@@ -85,11 +85,9 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-	app.UseSwagger();
-	app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -9,16 +9,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ResourceDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("ResourceDbConnection")
+        builder.Configuration.GetConnectionString("DefaultConnection")
     )
 );
 
 builder.Services.AddHttpClient("UserService", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5000/api/users/");
+    client.BaseAddress = new Uri("https://tp2-commerce-user-ggcthbeqdyapahhf.eastus-01.azurewebsites.net/");
 });
 
-// Add JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["SecretKey"] ?? "sk_dyb3FYyquQA3w8ZtrRVeJS7iIn2IXA2g";
 
@@ -73,11 +72,9 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-	app.UseSwagger();
-	app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAuthentication();
 app.UseAuthorization();
