@@ -285,9 +285,13 @@ TP2_CommerceElectronique/
 - [x] Standardisation du framework (.NET 10.0)
 - [x] Bonus : Service de notification implémenté et vérifié
 
-### Phase 3 : Déploiement ⏳ EN COURS (Sprint Final)
+### Phase 3 : Déploiement 🚀 SPRINT FINAL (Post-Consolidation)
 - [ ] Déploiement Azure
 - [ ] Configuration de production
+- [x] Consolidation de l'espace de travail (Purge des clones redondants) ✅
+- [x] Diagnostic de stabilité du Gateway (Issue 503 - max reconnect attempts) ✅
+- [ ] Vérification finale des cas de tests (README)
+- [ ] Validation du déploiement cloud
 
 ---
 
@@ -317,4 +321,4 @@ TP2_CommerceElectronique/
 
 ---
 
-*Dernière mise à jour : 17 avril 2026 | État du projet : 🚀 En cours, sprint final*
+*Dernière mise à jour : 18 avril 2026 | État du projet : 🚀 En cours, sprint final*
