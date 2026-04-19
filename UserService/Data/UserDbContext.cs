@@ -19,10 +19,7 @@ namespace UserService.Data
 
 			modelBuilder.Entity<User>(entity =>
 			{
-                // Le email devrait être unique
                 entity.HasIndex(e => e.Email).IsUnique();
-
-				// Valeur pas défaut
 				entity.Property(e => e.Role).HasDefaultValue("User");
 			});
 		}

@@ -8,23 +8,27 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Enregistre le contexte EF Core avec SQL Server
 builder.Services.AddDbContext<PaymentDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("PaymentDbConnection")
     )
 );
 
+// Enregistre un client HTTP pour le service des réservations
 builder.Services.AddHttpClient("ReservationsService", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5002");
 });
 
+// Enregistre le service Stripe
 builder.Services.AddScoped<PaymentService.Services.StripeService>();
 
+// Initialise la configuration Stripe
 var stripeSettings = builder.Configuration.GetSection("Stripe");
 StripeConfiguration.ApiKey = stripeSettings["SecretKey"];
 
-// Add JWT Authentication
+// Configure l'authentification JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["SecretKey"] ?? "sk_dyb3FYyquQA3w8ZtrRVeJS7iIn2IXA2g";
 
@@ -35,6 +39,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    // Règles de validation du token JWT
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -50,17 +55,19 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Enregistre les contrôleurs et les services Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    // Document Swagger 
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "PaymentService API",
         Version = "v1"
     });
 
-    // Add JWT Bearer Authentication to Swagger
+    // Schéma JWT Bearer dans Swagger
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -71,6 +78,7 @@ builder.Services.AddSwaggerGen(options =>
         Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer {token}' below."
     });
 
+    // Schéma Bearer aux endpoints
     options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
         [new OpenApiSecuritySchemeReference("Bearer", document)] = []
@@ -78,22 +86,24 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
+app.UseSwagger();
+app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Payment Service API v1");
     });
 
+if (app.Environment.IsDevelopment())
+{
+    // Crée la base si elle n'existe pas encore
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
     context.Database.EnsureCreated();
 }
 
+// Active le pipeline de sécurité et mappe les contrôleurs
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+// Démarre l'application
 app.Run();

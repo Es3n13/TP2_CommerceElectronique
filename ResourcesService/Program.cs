@@ -7,21 +7,26 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Enregistre le contexte EF Core avec SQL Server
 builder.Services.AddDbContext<ResourceDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("ResourceDbConnection")
     )
 );
 
+// Enregistre un client HTTP vers le service utilisateur
 builder.Services.AddHttpClient("UserService", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5000/api/users/");
 });
 
-// Add JWT Authentication
+// Récupère la configuration JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
+
+// Récupère la clé secrète utilisée pour signer les tokens
 var secretKey = jwtSettings["SecretKey"] ?? "sk_dyb3FYyquQA3w8ZtrRVeJS7iIn2IXA2g";
 
+// Configure l'authentification JWT Bearer
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -29,6 +34,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    // Règles de validation du JWT
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -44,17 +50,19 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Enregistre les contrôleurs et Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    // Document Swagger 
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "RessourcesService API",
         Version = "v1"
     });
 
-    // Add JWT Bearer Authentication to Swagger
+    // Schéma JWT Bearer dans Swagger
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -65,6 +73,7 @@ builder.Services.AddSwaggerGen(options =>
         Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer {token}' below."
     });
 
+    // Schéma Bearer aux endpoints documentés
     options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
         [new OpenApiSecuritySchemeReference("Bearer", document)] = []
@@ -73,24 +82,26 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-	app.UseSwagger();
-	app.UseSwaggerUI();
-}
+// Active Swagger UI
+app.UseSwagger();
+app.UseSwaggerUI();
 
+// Active l'authentification avant l'autorisation
 app.UseAuthentication();
 app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
-	using (var scope = app.Services.CreateScope())
-	{
-		var context = scope.ServiceProvider.GetRequiredService<ResourceDbContext>();
-		context.Database.EnsureCreated();
-	}
+    using (var scope = app.Services.CreateScope())
+    {
+        // Crée la base si elle n'existe pas encore
+        var context = scope.ServiceProvider.GetRequiredService<ResourceDbContext>();
+        context.Database.EnsureCreated();
+    }
 }
 
+// Mappe les routes des contrôleurs
 app.MapControllers();
 
+// Démarre l'application
 app.Run();

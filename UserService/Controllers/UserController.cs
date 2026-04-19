@@ -19,7 +19,6 @@ namespace UserService.Controllers
 			_authServiceClient = httpClientFactory.CreateClient("AuthService");
 		}
 
-		// Modèles
 		public class UserLoginRequest
 		{
 			public string Email { get; set; } = string.Empty;
@@ -234,8 +233,6 @@ namespace UserService.Controllers
 		public string? PhoneNumber { get; set; }
 		public string? Role { get; set; }
 	}
-
-    // DTO pour la réponse du token JWT
     public class TokenResponse
 	{
 		public string Token { get; set; } = string.Empty;

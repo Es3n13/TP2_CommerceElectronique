@@ -3,7 +3,6 @@ using ResourcesService.Models;
 
 namespace ResourcesService.Data
 {
-	// Database context pour ResourcesService
 	public class ResourceDbContext : DbContext
 	{
 		public ResourceDbContext(DbContextOptions<ResourceDbContext> options)

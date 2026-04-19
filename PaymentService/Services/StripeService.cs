@@ -4,124 +4,148 @@ using PaymentService.Data;
 
 namespace PaymentService.Services
 {
-	public class StripeService
-	{
-		private readonly IConfiguration _config;
-		private readonly PaymentDbContext _context;
-		private readonly HttpClient _httpClient;
+    public class StripeService
+    {
+        private readonly IConfiguration _config;
+        private readonly PaymentDbContext _context;
+        private readonly HttpClient _httpClient;
 
-		public StripeService(IConfiguration config, PaymentDbContext context, IHttpClientFactory httpClientFactory)
-		{
-			_config = config;
-			_context = context;
-			_httpClient = httpClientFactory.CreateClient("ReservationsService");
+        // Injecte la configuration, le contexte EF Core et un client HTTP nommé
+        public StripeService(
+            IConfiguration config,
+            PaymentDbContext context,
+            IHttpClientFactory httpClientFactory)
+        {
+            _config = config;
+            _context = context;
 
-			StripeConfiguration.ApiKey = _config["Stripe:SecretKey"];
-		}
+            // Crée un client HTTP vers le service des réservations
+            _httpClient = httpClientFactory.CreateClient("ReservationsService");
 
-		public async Task<PaymentIntent> CreatePaymentIntentAsync(decimal amount, string description, int reservationId, string? paymentMethodId = null)
-		{
-			var options = new PaymentIntentCreateOptions
-			{
-				Amount = (long)(amount * 100),
-				Currency = "cad",
-				Description = description,
-				Metadata = new Dictionary<string, string>
-				{
-					{ "reservation_id", reservationId.ToString() }
-				}
-			};
+            // Initialise la clé API Stripe
+            StripeConfiguration.ApiKey = _config["Stripe:SecretKey"];
+        }
 
-            // si la méthode de paiement est déjà fournie, tenter de confirmer immédiatement le paiement
+        // Crée un PaymentIntent Stripe et stock le paiement localement
+        public async Task<PaymentIntent> CreatePaymentIntentAsync(
+            decimal amount,
+            string description,
+            int reservationId,
+            string? paymentMethodId = null)
+        {
+            var options = new PaymentIntentCreateOptions
+            {
+                // Convertit le montant en plus petite unité monétaire
+                Amount = (long)(amount * 100),
+                Currency = "cad",
+                Description = description,
+
+                Metadata = new Dictionary<string, string>
+                {
+                    { "reservation_id", reservationId.ToString() }
+                }
+            };
+
+            // Si une méthode de paiement est fournie, tente une confirmation immédiate
             if (!string.IsNullOrEmpty(paymentMethodId))
-			{
-				options.PaymentMethod = paymentMethodId;
-				options.Confirm = true;
-				options.ReturnUrl = _config["App:BaseUrl"] ?? "http://localhost:5003/success";
-			}
+            {
+                options.PaymentMethod = paymentMethodId;
+                options.Confirm = true;
+                options.ReturnUrl = _config["App:BaseUrl"] ?? "http://localhost:5003/success";
+            }
 
-			var service = new PaymentIntentService();
-			var paymentIntent = await service.CreateAsync(options);
+            var service = new PaymentIntentService();
+            var paymentIntent = await service.CreateAsync(options);
 
-            // Sauvegarder le paiement dans la base de données
+            // Sauvegarde le paiement
             var payment = new Payment
-			{
-				ReservationId = reservationId,
-				Amount = amount,
-				StripePaymentIntentId = paymentIntent.Id,
-				Status = paymentIntent.Status == "succeeded" ? "Succeeded" : "Pending",
-				Currency = "cad",
-				CreatedAt = DateTime.UtcNow,
-				CompletedAt = paymentIntent.Status == "succeeded" ? DateTime.UtcNow : null
-			};
+            {
+                ReservationId = reservationId,
+                Amount = amount,
+                StripePaymentIntentId = paymentIntent.Id,
+                Status = paymentIntent.Status == "succeeded" ? "Succeeded" : "Pending",
+                Currency = "cad",
+                CreatedAt = DateTime.UtcNow,
+                CompletedAt = paymentIntent.Status == "succeeded" ? DateTime.UtcNow : null
+            };
 
-			_context.Payments.Add(payment);
-			await _context.SaveChangesAsync();
+            _context.Payments.Add(payment);
+            await _context.SaveChangesAsync();
 
-			return paymentIntent;
-		}
+            return paymentIntent;
+        }
 
-		public async Task<PaymentIntent> GetPaymentIntentAsync(string paymentIntentId)
-		{
-			var service = new PaymentIntentService();
-			return await service.GetAsync(paymentIntentId);
-		}
+        // Récupère un PaymentIntent
+        public async Task<PaymentIntent> GetPaymentIntentAsync(string paymentIntentId)
+        {
+            var service = new PaymentIntentService();
+            return await service.GetAsync(paymentIntentId);
+        }
 
-		public async Task<PaymentIntent> ConfirmPaymentIntentAsync(string paymentIntentId)
-		{
-			var options = new PaymentIntentConfirmOptions
-			{
-				ReturnUrl = _config["App:BaseUrl"] ?? "http://localhost:5003"
-			};
+        // Confirme un PaymentIntent
+        public async Task<PaymentIntent> ConfirmPaymentIntentAsync(string paymentIntentId)
+        {
+            var options = new PaymentIntentConfirmOptions
+            {
+                ReturnUrl = _config["App:BaseUrl"] ?? "http://localhost:5003"
+            };
 
-			var service = new PaymentIntentService();
-			return await service.ConfirmAsync(paymentIntentId, options);
-		}
+            var service = new PaymentIntentService();
+            return await service.ConfirmAsync(paymentIntentId, options);
+        }
 
-		public async Task<Refund> RefundPaymentAsync(string paymentIntentId, decimal? amount = null)
-		{
-			var refundOptions = new RefundCreateOptions
-			{
-				PaymentIntent = paymentIntentId
-			};
+        // Crée un remboursement
+        public async Task<Refund> RefundPaymentAsync(string paymentIntentId, decimal? amount = null)
+        {
+            var refundOptions = new RefundCreateOptions
+            {
+                PaymentIntent = paymentIntentId
+            };
 
-			if (amount.HasValue)
-			{
-				refundOptions.Amount = (long)(amount.Value * 100);
-			}
+            if (amount.HasValue)
+            {
+                // Convertit le montant remboursé en plus petite unité monétaire
+                refundOptions.Amount = (long)(amount.Value * 100);
+            }
 
-			var service = new RefundService();
-			return await service.CreateAsync(refundOptions);
-		}
+            var service = new RefundService();
+            return await service.CreateAsync(refundOptions);
+        }
 
-		public async Task<string> GetPaymentStatusAsync(string paymentIntentId)
-		{
-			var paymentIntent = await GetPaymentIntentAsync(paymentIntentId);
-			return paymentIntent.Status;
-		}
+        // Retourne le statut d'un PaymentIntent
+        public async Task<string> GetPaymentStatusAsync(string paymentIntentId)
+        {
+            var paymentIntent = await GetPaymentIntentAsync(paymentIntentId);
+            return paymentIntent.Status;
+        }
 
-		public async Task UpdatePaymentStatusAsync(int paymentId, string status, string? errorMessage = null)
-		{
-			var payment = await _context.Payments.FindAsync(paymentId);
-			if (payment != null)
-			{
-				payment.Status = status;
-				payment.StripeErrorMessage = errorMessage;
-				if (status == "Succeeded")
-				{
-					payment.CompletedAt = DateTime.UtcNow;
-				}
-				await _context.SaveChangesAsync();
-			}
-		}
+        // Met à jour le statut du paiement dans la bd
+        public async Task UpdatePaymentStatusAsync(int paymentId, string status, string? errorMessage = null)
+        {
+            var payment = await _context.Payments.FindAsync(paymentId);
 
-		public async Task UpdateReservationStatusAsync(int reservationId, string status)
-		{
-			var updateUrl = $"/api/reservations/{reservationId}";
-			var body = new { Status = status };
+            if (payment != null)
+            {
+                payment.Status = status;
+                payment.StripeErrorMessage = errorMessage;
 
-			var response = await _httpClient.PutAsJsonAsync(updateUrl, body);
-			response.EnsureSuccessStatusCode();
-		}
-	}
+                if (status == "Succeeded")
+                {
+                    payment.CompletedAt = DateTime.UtcNow;
+                }
+
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        // Met à jour le statut d'une réservation
+        public async Task UpdateReservationStatusAsync(int reservationId, string status)
+        {
+            var updateUrl = $"/api/reservations/{reservationId}";
+            var body = new { Status = status };
+
+            var response = await _httpClient.PutAsJsonAsync(updateUrl, body);
+            response.EnsureSuccessStatusCode();
+        }
+    }
 }

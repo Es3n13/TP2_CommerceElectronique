@@ -15,7 +15,6 @@ namespace NotificationService.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure Notification entity
             modelBuilder.Entity<Notification>(entity =>
             {
                 entity.HasKey(e => e.Id);

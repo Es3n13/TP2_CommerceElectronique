@@ -8,23 +8,27 @@ using AuthService.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Récupère la configuration JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
+
+// Récupère la clé secrète utilisée pour signer les tokens
 var secretKey = jwtSettings["SecretKey"]!
     ?? throw new InvalidOperationException("JWT SecretKey is not configured.");
 
-// Register HttpClient
+// Enregistre HttpClient dans le conteneur DI
 builder.Services.AddHttpClient();
 
-// Register Database Context
+// Enregistre le contexte EF Core avec SQL Server
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("AuthDbConnection")
     )
 );
 
-// Register Services
+// Enregistre le service de gestion des tokens
 builder.Services.AddScoped<TokenService>();
 
+// Configure l'authentification JWT Bearer
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -32,6 +36,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    // Paramètres de validation du JWT
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -41,26 +46,28 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.Zero 
     };
+});
 
-    // Inject custom events for revocation checking
-    });
-
+// Active le service d'autorisation
 builder.Services.AddAuthorization();
 
+// Active les contrôleurs MVC/API
 builder.Services.AddControllers();
 
-// Register Swagger/OpenAPI
+// Enregistre Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    // Déclare le document OpenAPI principal
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "AuthService API",
         Version = "v1"
     });
 
+    // Schéma de sécurité Bearer dans Swagger
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -71,6 +78,7 @@ builder.Services.AddSwaggerGen(options =>
         Description = "JWT Authorization header using the Bearer scheme."
     });
 
+    // Applique le schéma Bearer aux endpoints
     options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
         [new OpenApiSecuritySchemeReference("Bearer", document)] = []
@@ -79,15 +87,16 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-	app.UseSwagger();
-	app.UseSwaggerUI();
-}
+// Active Swagger
+app.UseSwagger();
+app.UseSwaggerUI();
 
+// Active l'authentification avant l'autorisation
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Mappe les routes des contrôleurs
 app.MapControllers();
 
+// Démarre l'application
 app.Run();

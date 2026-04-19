@@ -7,18 +7,20 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Enregistre le contexte EF Core avec SQL Server
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("UserDbConnection")
     )
 );
 
+// Enregistre un client HTTP vers AuthService
 builder.Services.AddHttpClient("AuthService", client =>
 {
     client.BaseAddress = new Uri("http://localhost:6001");
 });
 
-// Add JWT Authentication
+// Configure l'authentification JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["SecretKey"] ?? "sk_dyb3FYyquQA3w8ZtrRVeJS7iIn2IXA2g";
 
@@ -29,6 +31,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    // Paramètres de validation du JWT
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -44,17 +47,19 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Enregistre les contrôleurs et Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    // Document Swagger principal
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "UserService API",
         Version = "v1"
     });
 
-    // Add JWT Bearer Authentication to Swagger
+    // Schéma JWT Bearer dans Swagger
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -65,6 +70,7 @@ builder.Services.AddSwaggerGen(options =>
         Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer {token}' below."
     });
 
+    // Schéma Bearer aux endpoints documentés
     options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
         [new OpenApiSecuritySchemeReference("Bearer", document)] = []
@@ -73,24 +79,26 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-	app.UseSwagger();
-	app.UseSwaggerUI();
-}
+// Active Swagger UI
+app.UseSwagger();
+app.UseSwaggerUI();
 
+
+// Active l'authentification avant l'autorisation
 app.UseAuthentication();
 app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
-	using (var scope = app.Services.CreateScope())
-	{
-		var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
-		context.Database.EnsureCreated();
-	}
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+        context.Database.EnsureCreated();
+    }
 }
 
+// Mappe les routes des contrôleurs
 app.MapControllers();
 
+// Démarre l'application
 app.Run();

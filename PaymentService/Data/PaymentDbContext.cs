@@ -17,11 +17,11 @@ namespace PaymentService.Data
 
             modelBuilder.Entity<Payment>(entity =>
             {
-                // Prévient la duplication des payment intents pour la même réservation
+                // Prévienir la duplication des payment intents pour la même réservation
                 entity.HasIndex(e => new { e.ReservationId, e.StripePaymentIntentId })
                     .IsUnique();
 
-                // Index pour query les paiement par réservation
+                // Index les paiement par réservation
                 entity.HasIndex(e => e.ReservationId);
 
                 // Index unique pour les Stripe payment intent ID

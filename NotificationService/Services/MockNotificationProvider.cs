@@ -18,7 +18,7 @@ public class MockNotificationProvider : INotificationProvider
     public async Task<bool> SendAsync(Notification notification)
     {
         _logger.LogInformation("[MOCK] Sending {Channel} to User {UserId}: {Content}", Channel, notification.UserId, notification.Content);
-        await Task.Delay(100); // Simulate network lag
-        return true; // Always succeed for the PoC
+        await Task.Delay(100);
+        return true;
     }
 }
